@@ -1,0 +1,13 @@
+*.o
+*.P
+*.d
+*.so
+*.so.*
+*~
+*.swp
+\#*\#
+.\#*
+*target*
+html
+xhtest
+test/data/

@@ -1,0 +1,2 @@
+./xpadtest
+./xpadtest
