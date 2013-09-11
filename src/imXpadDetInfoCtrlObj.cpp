@@ -6,11 +6,11 @@
  */
 
 #include <cstdlib>
-#include "XpadInterface.h"
-#include "XpadCamera.h"
+#include "imXpadInterface.h"
+#include "imXpadCamera.h"
 
 using namespace lima;
-using namespace lima::Xpad;
+using namespace lima::imXpad;
 
 DetInfoCtrlObj::DetInfoCtrlObj(Camera& cam) : m_cam(cam) {
 	DEB_CONSTRUCTOR();

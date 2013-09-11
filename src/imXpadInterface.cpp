@@ -24,11 +24,11 @@
 // Created on: Aout 01, 2013
 // Author: Hector PEREZ PONCE
 
-#include "XpadInterface.h"
-#include "XpadCamera.h"
+#include "imXpadInterface.h"
+#include "imXpadCamera.h"
 
 using namespace lima;
-using namespace lima::Xpad;
+using namespace lima::imXpad;
 
 Interface::Interface(Camera& cam) :
     m_cam(cam), m_det_info(cam), m_sync(cam)

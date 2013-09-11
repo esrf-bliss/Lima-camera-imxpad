@@ -6,11 +6,11 @@
  */
 
 #include <sstream>
-#include "XpadInterface.h"
-#include "XpadCamera.h"
+#include "imXpadInterface.h"
+#include "imXpadCamera.h"
 
 using namespace lima;
-using namespace lima::Xpad;
+using namespace lima::imXpad;
 
 SyncCtrlObj::SyncCtrlObj(Camera& cam) : m_cam(cam) {
 	DEB_CONSTRUCTOR();

@@ -20,24 +20,24 @@
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 //###########################################################################
 //
-// XpadInterface.h
+// imXpadInterface.h
 // Created on: August 01, 2013
 // Author: Hector PEREZ PONCE
 
-namespace Xpad {
+namespace imXpad {
 
 /*******************************************************************
  * \class Interface
- * \brief Xpad hardware interface
+ * \brief imXpad hardware interface
  *******************************************************************/
 
 class Interface: HwInterface {
 %TypeHeaderCode
-#include <XpadInterface.h>
+#include <imXpadInterface.h>
 %End
 
 public:
-	Interface(Xpad::Camera& cam);
+	Interface(imXpad::Camera& cam);
 	virtual ~Interface();
 
  	virtual void getCapList(std::vector<HwCap> &cap_list /Out/) const;
@@ -49,4 +49,4 @@ public:
 	virtual int getNbHwAcquiredFrames();
 };
 
-}; // namespace Xpad
+}; // namespace imXpad

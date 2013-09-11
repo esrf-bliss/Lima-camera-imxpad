@@ -1,0 +1,2 @@
+./imxpadtest
+./imxpadtest

@@ -29,13 +29,13 @@
 #include <string>
 #include <math.h>
 #include <iomanip>
-#include "XpadCamera.h"
+#include "imXpadCamera.h"
 #include "Exceptions.h"
 #include "Debug.h"
 #include <unistd.h>
 
 using namespace lima;
-using namespace lima::Xpad;
+using namespace lima::imXpad;
 using namespace std;
 
 
@@ -94,7 +94,7 @@ void Camera::init() {
     DEB_TRACE() << "********** Inside of Camera::init ***********";
 
     stringstream cmd1, cmd2;
-    int dataPort, value;
+    int dataPort;
     string message;
 
     if (m_xpad->connectToServer(m_hostname, m_port) < 0) {
@@ -216,7 +216,7 @@ void Camera::getStatus(XpadStatus& status) {
 
     stringstream cmd;
     string str;
-    unsigned short pos, pos2;
+    unsigned short pos;
     cmd << "GetStatus";
     m_xpad->sendWait(cmd.str(), str);
     pos = str.find(":");
@@ -729,7 +729,6 @@ void Camera::readConfigG(unsigned short reg, void *values){
     stringstream cmd;
 
     unsigned short *ret = (unsigned short *)values;
-    unsigned short regid;
 
     cmd.str(string());
     cmd << "ReadConfigG " << " " << reg;

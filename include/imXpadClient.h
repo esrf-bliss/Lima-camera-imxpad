@@ -32,10 +32,8 @@
 #include "Debug.h"
 #include <fstream>
 
-using namespace std;
-
 namespace lima {
-namespace Xpad {
+namespace imXpad {
 
 const int RD_BUFF = 1000;	// Read buffer for more efficient recv
 
@@ -46,18 +44,18 @@ public:
     XpadClient();
     ~XpadClient();
 
-	void sendNowait(string cmd);
-	void sendWait(string cmd);
-	void sendWait(string cmd, int& value);
-	void sendWait(string cmd, double& value);
-	void sendWait(string cmd, string& value);
+	void sendNowait(std::string cmd);
+	void sendWait(std::string cmd);
+	void sendWait(std::string cmd, int& value);
+	void sendWait(std::string cmd, double& value);
+	void sendWait(std::string cmd, std::string& value);
 
-	int connectToServer (const string hostname, int port);
+	int connectToServer (const std::string hostname, int port);
 	void disconnectFromServer();
 	int initServerDataPort();
     void getData(void* bptr, int num, unsigned int xpad_format);
-	string getErrorMessage() const;
-	vector<string> getDebugMessages() const;
+	std::string getErrorMessage() const;
+	std::vector<std::string> getDebugMessages() const;
 
     int m_skt;							// socket for commands */
 
@@ -71,8 +69,8 @@ private:
 	int m_num_read, m_cur_pos;
 	char m_rd_buff[RD_BUFF];
 	int m_just_read;
-	string m_errorMessage;
-	vector<string> m_debugMessages;
+	std::string m_errorMessage;
+	std::vector<std::string> m_debugMessages;
 
 	enum ServerResponse {
 		CLN_NEXT_PROMPT,		// '> ': at prompt
@@ -84,18 +82,18 @@ private:
 		CLN_NEXT_DBLRET,		// '* ': read double ret value
 		CLN_NEXT_STRRET			// '* ': read string ret value
 	};
-	void sendCmd(const string cmd);
-	int waitForResponse(string& value);
+	void sendCmd(const std::string cmd);
+	int waitForResponse(std::string& value);
 	int waitForResponse(double& value);
 	int waitForResponse(int& value);
 	int waitForPrompt();
-	int nextLine(string *errmsg, int *ivalue, double *dvalue, string *svalue, int *done, int *outoff);
+	int nextLine(std::string *errmsg, int *ivalue, double *dvalue, std::string *svalue, int *done, int *outoff);
 	int getChar();
 
-	void errmsg_handler(const string errmsg);
-	void debugmsg_handler(const string msg);
-	void timebar_handler(int done, int outoff, const string errmsg);
-	void error_handler(const string errmsg);
+	void errmsg_handler(const std::string errmsg);
+	void debugmsg_handler(const std::string msg);
+	void timebar_handler(int done, int outoff, const std::string errmsg);
+	void error_handler(const std::string errmsg);
 };
 
 } // namespace xpad

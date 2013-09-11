@@ -30,7 +30,7 @@
 #include "HwInterface.h"
 
 namespace lima {
-namespace Xpad {
+namespace imXpad {
 
 class Interface;
 class Camera;
@@ -161,7 +161,7 @@ private:
     SyncCtrlObj m_sync;
 };
 
-} // namespace Xpad
+} // namespace imXpad
 } // namespace lima
 
 #endif /* XPADINTERFACE_H_ */

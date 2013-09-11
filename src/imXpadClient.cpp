@@ -46,7 +46,7 @@
 #include <signal.h>
 #include <stdlib.h>
 
-#include "XpadClient.h"
+#include "imXpadClient.h"
 #include "ThreadUtils.h"
 #include "Exceptions.h"
 #include "Debug.h"
@@ -60,7 +60,7 @@ const char QUIT[] = "quit\n";		// sent using 'send'
 
 using namespace std;
 using namespace lima;
-using namespace lima::Xpad;
+using namespace lima::imXpad;
 
 XpadClient::XpadClient() : m_debugMessages() {
     DEB_CONSTRUCTOR();
@@ -163,7 +163,7 @@ void XpadClient::sendNowait(string cmd) {
 
 void XpadClient::getData(void *bptr, int num, unsigned int xpad_format ) {
     DEB_MEMBER_FUNCT();
-    int rc;
+    int rc = 0;			// never assigned???? (seb)
     int dataPort;
     unsigned short value_short;
     unsigned int value_int;

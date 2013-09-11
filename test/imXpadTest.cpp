@@ -27,8 +27,8 @@
 #include "CtShutter.h"
 #include "Constants.h"
 
-#include "XpadCamera.h"
-#include "XpadInterface.h"
+#include "imXpadCamera.h"
+#include "imXpadInterface.h"
 #include "Debug.h"
 //#include "Exception.h"
 #include <iostream>
@@ -37,7 +37,7 @@
 
 using namespace std;
 using namespace lima;
-using namespace lima::Xpad;
+using namespace lima::imXpad;
 
 DEB_GLOBAL(DebModTest);
 

@@ -20,7 +20,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 ############################################################################
 
-xpad-objs := XpadCamera.o XpadClient.o XpadDetInfoCtrlObj.o XpadInterface.o XpadSyncCtrlObj.o
+xpad-objs := imXpadCamera.o imXpadClient.o imXpadDetInfoCtrlObj.o imXpadInterface.o imXpadSyncCtrlObj.o
 
 SRCS = $(xpad-objs:.o=.cpp)
 
@@ -34,14 +34,14 @@ INCLUDES = -I../include \
 CXXFLAGS += $(INCLUDES) -fPIC -Wall -pthread
 
 
-all: Xpad.o
+all: imXpad.o
 
 
-Xpad.o: $(xpad-objs)
+imXpad.o: $(xpad-objs)
 	ld -o $@ -r $+
 
 clean:
-	rm -f xpad.o $(xpad-objs) *.P
+	rm -f imXpad.o $(xpad-objs) *.P
 
 %.o : %.cpp
 	$(COMPILE.cpp) -MD $(CXXFLAGS) -o $@ $<
@@ -51,3 +51,8 @@ clean:
 	rm -f $*.d
 
 -include $(SRCS:.cpp=.P)
+
+
+.PHONY: check-syntax
+check-syntax:
+	$(CXX) -Wall -Wextra -fsyntax-only $(CXXFLAGS) $(CHK_SOURCES)

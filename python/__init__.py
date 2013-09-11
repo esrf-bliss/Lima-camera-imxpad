@@ -31,7 +31,7 @@ from Lima import Core
 
 cleanup_data = module_helper.load_dep_cleanup(cleanup_data)
 
-from Lima.Xpad.limaxpad import Xpad as _B
+from Lima.imXpad.limaimxpad import imXpad as _B
 globals().update(_B.__dict__)
 
 module_helper.load_cleanup(cleanup_data)

@@ -21,11 +21,11 @@
 ############################################################################
 include ../../../config.inc
 
-SRCS = XpadTest.cpp 
+SRCS = imXpadTest.cpp 
 
 
 LDFLAGS = -pthread -L../../../build  -L../../../third-party/Processlib/build 
-LDLIBS = -llimaxpad -llimacore  -lprocesslib 
+LDLIBS = -llimaimxpad -llimacore  -lprocesslib 
 
 CXXFLAGS = -I../include \
 	       -I../../../hardware/include \
@@ -47,16 +47,16 @@ CXXFLAGS += -DWITH_SPS_IMAGE -I../../third-party/libconfig/lib
 LDLIBS += -L../../../third-party/sps/lib/.libs -lconfig
 endif
 
-test-progs = xpadtest
+test-progs = imxpadtest
 
 all: 	$(test-progs)
 
-xpadtest:		XpadTest.o ../src/Xpad.o
+imxpadtest:		imXpadTest.o ../src/imXpad.o
 	$(CXX) $(LDFLAGS) -o $@ $+ $(LDLIBS)
 
 
 clean:
-	rm -f *.o *.P xpadtest
+	rm -f *.o *.P imxpadtest
 
 %.o : %.cpp
 	$(COMPILE.cpp) -MD $(CXXFLAGS) -o $@ $<

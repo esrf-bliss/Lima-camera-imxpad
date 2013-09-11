@@ -20,41 +20,20 @@
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 //###########################################################################
 /*
- * XpadCamera.h
+ * imXpadCamera.h
  * Created on: August 01, 2013
  * Author: Hector PEREZ PONCE
  */
-#ifndef XPADCAMERA_H_
-#define XPADCAMERA_H_
-
-#include <stdlib.h>
-#include <limits>
-#include <stdarg.h>
-#include <strings.h>
-#include "HwMaxImageSizeCallback.h"
-#include "HwBufferMgr.h"
-#include "HwInterface.h"
-#include "XpadInterface.h"
-#include <ostream>
-#include "Debug.h"
-#include "XpadClient.h"
-
-using namespace std;
-
-namespace lima {
-namespace Xpad {
-
-const int xPixelSize = 1;
-const int yPixelSize = 1;
-
-class BufferCtrlObj;
+namespace imXpad {
 
 /*******************************************************************
  * \class Camera
- * \brief object controlling the Xpad camera
+ * \brief object controlling the imXpad camera
  *******************************************************************/
 class Camera {
-    DEB_CLASS_NAMESPC(DebModCamera, "Camera", "Xpad");
+%TypeHeaderCode
+#include <imXpadCamera.h>
+%End
 
 public:
     struct XpadStatus {
@@ -89,7 +68,7 @@ public:
         };
     };
 
-    Camera(string hostname, int port, string xpad_model);
+    Camera(std::string hostname, int port, std::string xpad_model);
     ~Camera();
 
     void init();
@@ -99,36 +78,37 @@ public:
     void stopAcq();
 
     // -- detector info object
-    void getImageType(ImageType& type);
+    void getImageType(ImageType& type /Out/);
     void setImageType(ImageType type);
-    void getDetectorType(std::string& type);
-    void getDetectorModel(std::string& model);
-    void getDetectorImageSize(Size& size);
-    void getPixelSize(double& size_x, double& size_y);
+    void getDetectorType(std::string& type /Out/);
+    void getDetectorModel(std::string& model /Out/);
+    void getDetectorImageSize(Size& size /Out/);
+    void getPixelSize(double& size_x /Out/, double& size_y /Out/);
 
     // -- Buffer control object
-    HwBufferCtrlObj* getBufferCtrlObj();
+	/*    HwBufferCtrlObj* getBufferCtrlObj();
     void setNbFrames(int nb_frames);
     void getNbFrames(int& nb_frames);
     void readFrame(void *ptr, int frame_nb);
     int getNbHwAcquiredFrames();
+*/	
 
     //-- Synch control object
-    void setTrigMode(TrigMode mode);
+/*    void setTrigMode(TrigMode mode);
     void getTrigMode(TrigMode& mode);
     void setExpTime(double exp_time);
     void getExpTime(double& exp_time);
     void setLatTime(double lat_time);
     void getLatTime(double& lat_time);
-
+*/
     //-- Status
-    void getStatus(XpadStatus& status);
-    bool isAcqRunning() const;
+   // void getStatus(XpadStatus& status);
+   // bool isAcqRunning() const;
 
     //---------------------------------------------------------------
     //- XPAD Stuff
     //! Get list of USB connected devices
-    void getUSBDeviceList(void);
+    void getUSBDeviceList();
 
     //! Connect to a selected QuickUSB device
     void setUSBDevice(unsigned short module);
@@ -152,7 +132,7 @@ public:
     void loadConfigG(unsigned short reg, unsigned short value);
 
     //! Read values from register and from all chips in global configuration
-    void readConfigG(unsigned short reg, void *values);
+    //void readConfigG(unsigned short reg, void *values);
 
     //! Increment of one unit of the global ITHL register
     void ITHLIncrease();
@@ -228,79 +208,7 @@ public:
 
 
 
-private:
-    int sendData_2B(int sockd, const void *vptr, size_t n);
-
-    // Xpad specific
-
-    /*     TYPE OF SYTEM     */
-#define XPAD_S10                    0
-#define XPAD_C10                    1
-#define XPAD_A10                    2
-#define XPAD_S70                    3
-#define XPAD_S70C                   4
-#define XPAD_S140                   5
-#define XPAD_S340                   6
-#define XPAD_S540                   7
-#define XPAD_S540V                  8
-
-   /*     GLOBAL REGISTERS     */
-#define AMPTP                       31
-#define IMFP                        59
-#define IOTA                        60
-#define IPRE                        61
-#define ITHL                        62
-#define ITUNE                       63
-#define IBUFF                       64
-
-#define IMG_LINE	120
-#define IMG_COLUMN 	80
-
-
-    enum DATA_TYPE {IMG, CONFIG};
-    enum IMG_TYPE  {B2,B4};
-
-    XpadClient              *m_xpad;
-
-
-    //---------------------------------
-    //- LIMA stuff
-    string                  m_hostname;
-    int                     m_port;
-    string                  m_configName;
-    string                  m_sysName;
-    int                     m_nb_frames;
-    int                     m_acq_frame_nb;
-
-    mutable Cond            m_cond;
-    bool                    m_quit;
-    bool                    m_wait_flag;
-    bool                    m_thread_running;
-
-    class                   AcqThread;
-    AcqThread               *m_acq_thread;
-
-    //---------------------------------
-    //- XPAD stuff
-    unsigned short	        m_modules_mask;
-    unsigned short          m_chip_mask;
-    unsigned short          m_xpad_model;
-    Size                    m_image_size;
-    IMG_TYPE                m_pixel_depth;
-    unsigned int            m_xpad_format;
-    unsigned int            m_xpad_trigger_mode;
-    unsigned int            m_exp_time_usec;
-    int				        m_module_number;
-    int                     m_chip_number;
-
-
-
-
-    // Buffer control object
-    SoftBufferCtrlObj m_bufferCtrlObj;
 };
 
-} // namespace Xpad
-} // namespace lima
+}; // namespace imXpad
 
-#endif /* XPADCAMERA_H_ */
