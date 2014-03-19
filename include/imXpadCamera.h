@@ -118,7 +118,7 @@ public:
     void getLatTime(double& lat_time);
 
     //-- Status
-    void getStatus(XpadStatus& status);
+    void getStatus(XpadStatus& status,bool = false);
     bool isAcqRunning() const;
 
     //---------------------------------------------------------------

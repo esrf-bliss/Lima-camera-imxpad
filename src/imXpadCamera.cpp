@@ -100,7 +100,7 @@ int Camera::init() {
     DEB_TRACE() << "********** Inside of Camera::init ***********";
 
     stringstream cmd1, cmd2;
-    int value, ret;
+    int ret;
     string message;
 
     if (m_xpad->connectToServer(m_hostname, m_port) < 0) {
@@ -275,7 +275,7 @@ void Camera::readFrameExpose(void *bptr, int frame_nb) {
     DEB_TRACE() << "********** Outside of Camera::readFrame ***********";
 }
 
-void Camera::getStatus(XpadStatus& status) {
+void Camera::getStatus(XpadStatus& status,bool internal) {
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "********** Inside of Camera::getStatus ***********";
 
@@ -283,18 +283,24 @@ void Camera::getStatus(XpadStatus& status) {
     string str;
     unsigned short pos, pos2;
     cmd << "GetStatus";
-    m_xpad->sendWait(cmd.str(), str);
-    pos = str.find(":");
-    string state = str.substr (0, pos);
-    if (state.compare("Idle") == 0) {
-        status.state = XpadStatus::Idle;
-    } else if (state.compare("Digital_Test") == 0) {
-        status.state = XpadStatus::Test;
-    } else if (state.compare("Resetting") == 0) {
-        status.state = XpadStatus::Resetting;
-    } else {
-        status.state = XpadStatus::Running;
-    }
+    
+    if(internal || !m_thread_running)
+      {
+	m_xpad->sendWait(cmd.str(), str);
+	pos = str.find(":");
+	string state = str.substr (0, pos);
+	if (state.compare("Idle") == 0) {
+	  status.state = XpadStatus::Idle;
+	} else if (state.compare("Digital_Test") == 0) {
+	  status.state = XpadStatus::Test;
+	} else if (state.compare("Resetting") == 0) {
+	  status.state = XpadStatus::Resetting;
+	} else {
+	  status.state = XpadStatus::Running;
+	}
+      }
+    else
+      status.state = XpadStatus::Running;
 
     DEB_TRACE() << "XpadStatus.state is [" << status.state << "]";
 
@@ -330,7 +336,7 @@ void Camera::AcqThread::threadFunction() {
         bool continueFlag = true;
         while (continueFlag && (!m_cam.m_nb_frames || m_cam.m_acq_frame_nb < m_cam.m_nb_frames)) {
             XpadStatus status;
-            m_cam.getStatus(status);
+            m_cam.getStatus(status,true);
             if (status.state == status.Idle || status.completed_frames > m_cam.m_acq_frame_nb) {
 
                 DEB_TRACE() << m_cam.m_acq_frame_nb;
