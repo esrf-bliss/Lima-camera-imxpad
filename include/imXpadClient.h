@@ -32,6 +32,7 @@
 #include "Debug.h"
 #include <fstream>
 
+
 namespace lima {
 namespace imXpad {
 
@@ -44,7 +45,7 @@ public:
     XpadClient();
     ~XpadClient();
 
-	void sendNowait(std::string cmd);
+    void sendNoWait(std::string cmd);
 	void sendWait(std::string cmd);
 	void sendWait(std::string cmd, int& value);
 	void sendWait(std::string cmd, double& value);
@@ -53,9 +54,11 @@ public:
 	int connectToServer (const std::string hostname, int port);
 	void disconnectFromServer();
 	int initServerDataPort();
-    void getData(void* bptr, int num, unsigned int xpad_format);
+    void getData(void* bptr, int num, unsigned short xpad_format);
+    void getDataExpose(void* bptr, int num, unsigned short xpad_format);
 	std::string getErrorMessage() const;
 	std::vector<std::string> getDebugMessages() const;
+    int getChar();
 
     int m_skt;							// socket for commands */
 
@@ -88,7 +91,7 @@ private:
 	int waitForResponse(int& value);
 	int waitForPrompt();
 	int nextLine(std::string *errmsg, int *ivalue, double *dvalue, std::string *svalue, int *done, int *outoff);
-	int getChar();
+
 
 	void errmsg_handler(const std::string errmsg);
 	void debugmsg_handler(const std::string msg);
@@ -96,7 +99,7 @@ private:
 	void error_handler(const std::string errmsg);
 };
 
-} // namespace xpad
+} // namespace imXpad
 } // namespace lima
 
 #endif /* XPADCLIENT_CPP_ */

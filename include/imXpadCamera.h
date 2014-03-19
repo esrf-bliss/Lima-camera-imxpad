@@ -64,10 +64,7 @@ public:
             Running ///< The detector is acquiring data.
         };
         XpadState state;
-        int group_num; ///< The current group number being acquired, only valid when not {@link #Idle}
         int frame_num; ///< The current frame number, within a group, being acquired, only valid when not {@link #Idle}
-        int scan_num; ///< The current scan number, within a frame, being acquired, only valid when not {@link #Idle}
-        int cycle; ///< Not supported yet
         int completed_frames; ///< The number of frames completed, only valid when not {@link #Idle}
     };
 
@@ -90,7 +87,7 @@ public:
     Camera(std::string hostname, int port, std::string xpad_model);
     ~Camera();
 
-    void init();
+    int init();
     void reset();
     void prepareAcq();
     void startAcq();
@@ -109,6 +106,7 @@ public:
     void setNbFrames(int nb_frames);
     void getNbFrames(int& nb_frames);
     void readFrame(void *ptr, int frame_nb);
+    void readFrameExpose(void *ptr, int frame_nb);
     int getNbHwAcquiredFrames();
 
     //-- Synch control object
@@ -126,108 +124,63 @@ public:
     //---------------------------------------------------------------
     //- XPAD Stuff
     //! Get list of USB connected devices
-    void getUSBDeviceList(void);
+    std::string getUSBDeviceList(void);
 
     //! Connect to a selected QuickUSB device
-    void setUSBDevice(unsigned short module);
+    int setUSBDevice(unsigned short module);
 
     //! Define the Detecto Model
-    void DefineDetectorModel(unsigned short model);
+    int defineDetectorModel(unsigned short model);
 
     //! Check if detector is Ready to work
-    void askReady();
+    int askReady();
 
     //! Perform a Digital Test
-    void digitalTest(unsigned short DT_value, unsigned short mode);
+    int digitalTest(unsigned short DT_value, unsigned short mode);
 
     //! Read global configuration values from file and load them in the detector
-    void loadConfigGFromFile(char *fpath);
+    int loadConfigGFromFile(char *fpath);
 
     //! Save global configuration values from detector to file
-    void saveConfigGToFile(char *fpath);
+    int saveConfigGToFile(char *fpath);
 
     //! Send value to register for all chips in global configuration
-    void loadConfigG(unsigned short reg, unsigned short value);
+    int loadConfigG(unsigned short reg, unsigned short value);
 
     //! Read values from register and from all chips in global configuration
-    void readConfigG(unsigned short reg, void *values);
+    int readConfigG(unsigned short reg, void *values);
+
+    //! Load default values for global configuration
+    int loadDefaultConfigGValues();
 
     //! Increment of one unit of the global ITHL register
-    void ITHLIncrease();
+    int ITHLIncrease();
 
     //! Decrement of one unit in the global ITHL register
-    void ITHLDecrease();
+    int ITHLDecrease();
 
     //!	Load of flat config of value: flat_value (on each pixel)
-    void loadFlatConfigL(unsigned short flat_value);
+    int loadFlatConfigL(unsigned short flat_value);
 
-    //! Read local configuration values from file and save it in detector's SRAM
-    void loadConfigLFromFileToSRAM(char *fpath);
-
-    //! Read local configuration values from detector's SRAM to detector
-    void loadConfigLSRAMToDetector();
+    //! Read local configuration values from file and save it in detector
+    int loadConfigLFromFile(char *fpath);
 
     //! Save local configuration values from detector to file
-    void saveConfigLToFile(char *fpath);
+    int saveConfigLToFile(char *fpath);
 
     //! Set the exposure parameters
-    void setExposureParameters(double Texp,double Tovf,unsigned short trigger_mode,unsigned short BusyOutSel);
+    int setExposureParameters(unsigned int NumImage, double Texp,double Tovf,unsigned short trigger_mode,unsigned short BusyOutSel);
 
     //! Perform a Calibration over the noise
-    void calibrationOTN(unsigned short OTNCalibration);
+    int calibrationOTN(unsigned short OTNCalibration);
 
+    //! Reset the detector modules
+    int resetModules();
 
-    //! Set all the config G
-    //void setAllConfigG(const vector<long>& allConfigG);
-    //!	Set the Acquisition type between fast and slow
-    //void setAcquisitionType(short acq_type);
-    /*    //!	Load of flat config of value: flat_value (on each pixel)
-    void loadFlatConfig(unsigned flat_value);
-    //! Load all the config G
-    void loadAllConfigG(unsigned long modNum, unsigned long chipId , unsigned long* config_values);
-    //! Load a wanted config G with a wanted value
-    void loadConfigG(const vector<unsigned long>& reg_and_value);
-    //! Load a known value to the pixel counters
-    void loadAutoTest(unsigned known_value);
-    //! Save the config L (DACL) to XPAD RAM
-    void saveConfigL(unsigned long modMask, unsigned long calibId, unsigned long chipId, unsigned long curRow,unsigned long* values);
-    //! Save the config G to XPAD RAM
-    void saveConfigG(unsigned long modMask, unsigned long calibId, unsigned long reg,unsigned long* values);
-    //! Load the config to detector chips
-    void loadConfig(unsigned long modMask, unsigned long calibId);
-    //! Get the modules config (Local aka DACL)
-    unsigned short*& getModConfig();
-    //! Reset the detector
-    void reset();
-    //! Set the exposure parameters
-    void setExposureParameters( unsigned Texp,unsigned Twait,unsigned Tinit,
-                                unsigned Tshutter,unsigned Tovf,unsigned mode, unsigned n,unsigned p,
-                                unsigned nbImages,unsigned BusyOutSel,unsigned formatIMG,unsigned postProc,
-                                unsigned GP1,unsigned GP2,unsigned GP3,unsigned GP4);
-    //! Calibrate over the noise Slow and save dacl and configg files in path
-    void calibrateOTNSlow (string path);
-    //! Calibrate over the noise Medium and save dacl and configg files in path
-    void calibrateOTNMedium (string path);
-    //! Calibrate over the noise High and save dacl and configg files in path
-    void calibrateOTNHigh (string path);
-    //! upload the calibration (dacl + config) that is stored in path
-    void uploadCalibration(string path);
-    //! upload the wait times between each images in case of a sequence of images (Twait from setExposureParameters should be 0)
-    void uploadExpWaitTimes(unsigned long *pWaitTime, unsigned size);
-    //! increment the ITHL
-    void incrementITHL();
-    //! decrement the ITHL
-    void decrementITHL();
-    //! set the specific parameters (deadTime,init time, shutter ...
-    void setSpecificParameters( unsigned deadtime, unsigned init,
-                                unsigned shutter, unsigned ovf,
-                                unsigned n,       unsigned p,
-                                unsigned GP1,     unsigned GP2,    unsigned GP3,      unsigned GP4);*/
-
-
+    //! Indicate to Server to liberate thread
+    void exit();
 
 private:
-    int sendData_2B(int sockd, const void *vptr, size_t n);
 
     // Xpad specific
 
@@ -260,7 +213,6 @@ private:
 
     XpadClient              *m_xpad;
 
-
     //---------------------------------
     //- LIMA stuff
     std::string             m_hostname;
@@ -280,15 +232,15 @@ private:
 
     //---------------------------------
     //- XPAD stuff
-    unsigned short	    m_modules_mask;
+    unsigned short	        m_modules_mask;
     unsigned short          m_chip_mask;
     unsigned short          m_xpad_model;
+    unsigned short          m_xpad_format;
     Size                    m_image_size;
-    IMG_TYPE                m_pixel_depth;
-    unsigned int            m_xpad_format;
+    IMG_TYPE                m_pixel_depth;    
     unsigned int            m_xpad_trigger_mode;
     unsigned int            m_exp_time_usec;
-    int			    m_module_number;
+    int				        m_module_number;
     int                     m_chip_number;
 
 

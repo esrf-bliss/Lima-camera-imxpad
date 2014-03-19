@@ -45,10 +45,7 @@ public:
             Running ///< The detector is acquiring data.
         };
         XpadState state;
-        int group_num; ///< The current group number being acquired, only valid when not {@link #Idle}
         int frame_num; ///< The current frame number, within a group, being acquired, only valid when not {@link #Idle}
-        int scan_num; ///< The current scan number, within a frame, being acquired, only valid when not {@link #Idle}
-        int cycle; ///< Not supported yet
         int completed_frames; ///< The number of frames completed, only valid when not {@link #Idle}
     };
 
@@ -71,7 +68,7 @@ public:
     Camera(std::string hostname, int port, std::string xpad_model);
     ~Camera();
 
-    void init();
+    int init();
     void reset();
     void prepareAcq();
     void startAcq();
@@ -108,55 +105,68 @@ public:
     //---------------------------------------------------------------
     //- XPAD Stuff
     //! Get list of USB connected devices
-    void getUSBDeviceList();
+    std::string getUSBDeviceList();
 
     //! Connect to a selected QuickUSB device
-    void setUSBDevice(unsigned short module);
+    int setUSBDevice(unsigned short module);
 
     //! Define the Detecto Model
-    void DefineDetectorModel(unsigned short model);
+    int defineDetectorModel(unsigned short model);
 
     //! Check if detector is Ready to work
-    void askReady();
+    int askReady();
 
     //! Perform a Digital Test
-    void digitalTest(unsigned short DT_value, unsigned short mode);
+    int digitalTest(unsigned short DT_value, unsigned short mode);
 
     //! Read global configuration values from file and load them in the detector
-    void loadConfigGFromFile(char *fpath);
+    int loadConfigGFromFile(char *fpath);
 
     //! Save global configuration values from detector to file
-    void saveConfigGToFile(char *fpath);
+    int saveConfigGToFile(char *fpath);
 
     //! Send value to register for all chips in global configuration
-    void loadConfigG(unsigned short reg, unsigned short value);
+    int loadConfigG(unsigned short reg, unsigned short value);
 
     //! Read values from register and from all chips in global configuration
-    //void readConfigG(unsigned short reg, void *values);
+    int readConfigG(unsigned short reg, void *values);
+
+    //! Load default values for global configuration
+    int loadDefaultConfigGValues();
 
     //! Increment of one unit of the global ITHL register
-    void ITHLIncrease();
+    int ITHLIncrease();
 
     //! Decrement of one unit in the global ITHL register
-    void ITHLDecrease();
+    int ITHLDecrease();
 
     //!	Load of flat config of value: flat_value (on each pixel)
-    void loadFlatConfigL(unsigned short flat_value);
+    int loadFlatConfigL(unsigned short flat_value);
 
     //! Read local configuration values from file and save it in detector's SRAM
-    void loadConfigLFromFileToSRAM(char *fpath);
+    //int loadConfigLFromFileToSRAM(char *fpath);
 
     //! Read local configuration values from detector's SRAM to detector
-    void loadConfigLSRAMToDetector();
+    //int loadConfigLSRAMToDetector();
+
+    //! Read local configuration values from file and save it in detector
+    int loadConfigLFromFile(char *fpath);
 
     //! Save local configuration values from detector to file
-    void saveConfigLToFile(char *fpath);
+    int saveConfigLToFile(char *fpath);
 
     //! Set the exposure parameters
-    void setExposureParameters(double Texp,double Tovf,unsigned short trigger_mode,unsigned short BusyOutSel);
+    //int setExposureParameters(double Texp,double Tovf,unsigned short trigger_mode,unsigned short BusyOutSel);
+    int setExposureParameters(unsigned int NumImage, double Texp,double Tovf,unsigned short trigger_mode,unsigned short BusyOutSel);
 
     //! Perform a Calibration over the noise
-    void calibrationOTN(unsigned short OTNCalibration);
+    int calibrationOTN(unsigned short OTNCalibration);
+
+    //! Reset the detector modules
+    int resetModules();
+
+    //! Indicate to Server to liberate thread
+    void exit();
 
 
     //! Set all the config G
@@ -187,13 +197,13 @@ public:
                                 unsigned nbImages,unsigned BusyOutSel,unsigned formatIMG,unsigned postProc,
                                 unsigned GP1,unsigned GP2,unsigned GP3,unsigned GP4);
     //! Calibrate over the noise Slow and save dacl and configg files in path
-    void calibrateOTNSlow (string path);
+    void calibrateOTNSlow (std::string path);
     //! Calibrate over the noise Medium and save dacl and configg files in path
-    void calibrateOTNMedium (string path);
+    void calibrateOTNMedium (std::string path);
     //! Calibrate over the noise High and save dacl and configg files in path
-    void calibrateOTNHigh (string path);
+    void calibrateOTNHigh (std::string path);
     //! upload the calibration (dacl + config) that is stored in path
-    void uploadCalibration(string path);
+    void uploadCalibration(std::string path);
     //! upload the wait times between each images in case of a sequence of images (Twait from setExposureParameters should be 0)
     void uploadExpWaitTimes(unsigned long *pWaitTime, unsigned size);
     //! increment the ITHL
