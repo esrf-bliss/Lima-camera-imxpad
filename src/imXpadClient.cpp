@@ -197,7 +197,7 @@ void XpadClient::getData(void *bptr, int num, unsigned short xpad_format) {
                 }
                 else{
                     //cout << dataString << " ";
-                    cout << dataCount <<  " ";
+                    //cout << dataCount <<  " ";
                     if (xpad_format==0){
                         buffer_short[dataCount] = (unsigned short) atoi(dataString.c_str());
                     }
@@ -261,7 +261,7 @@ void XpadClient::getDataExpose(void *bptr, int num, unsigned short xpad_format) 
                 }
                 else{
                     //cout << dataString << " ";
-                    cout << dataCount <<  " ";
+                    //cout << dataCount <<  " ";
                     if (xpad_format==0){
                         buffer_short[dataCount] = (unsigned short) atoi(dataString.c_str());
                     }
@@ -279,6 +279,7 @@ void XpadClient::getDataExpose(void *bptr, int num, unsigned short xpad_format) 
     else
         THROW_HW_ERROR(Error) << "Read data from server FAILED";
 }
+
 /*
 void XpadClient::getData(void *bptr, int num, unsigned int xpad_format ) {
     DEB_MEMBER_FUNCT();

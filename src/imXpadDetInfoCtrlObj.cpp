@@ -27,7 +27,8 @@ void DetInfoCtrlObj::getMaxImageSize(Size& size) {
 
 void DetInfoCtrlObj::getDetectorImageSize(Size& image_size) {
     DEB_MEMBER_FUNCT();
-    getMaxImageSize(image_size);
+   //getMaxImageSize(image_size);
+    m_cam.getDetectorImageSize(image_size);
 
 }
 
