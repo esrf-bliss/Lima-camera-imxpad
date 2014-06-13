@@ -194,6 +194,7 @@ private:
 #define XPAD_S340                   6
 #define XPAD_S540                   7
 #define XPAD_S540V                  8
+#define XPAD_S1400                  9
 
    /*     GLOBAL REGISTERS     */
 #define AMPTP                       31

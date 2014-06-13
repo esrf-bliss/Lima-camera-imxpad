@@ -71,9 +71,19 @@ Camera::Camera(string hostname, int port, string xpad_model) : m_hostname(hostna
     
     if	(xpad_model == "XPAD_S70"){
         m_xpad_model = XPAD_S70; m_modules_mask = 1; m_chip_mask = 127; m_module_number = 1; m_chip_number = 7;
+        m_image_size = Size(IMG_COLUMN * m_chip_number, IMG_LINE * m_module_number);
     }
     else if	(xpad_model == "XPAD_S70C"){
         m_xpad_model = XPAD_S70; m_modules_mask = 1; m_chip_mask = 127; m_module_number = 1; m_chip_number = 7;
+        m_image_size = Size(IMG_COLUMN * m_chip_number, IMG_LINE * m_module_number);
+    }
+    else if	(xpad_model == "XPAD_S140"){
+        m_xpad_model = XPAD_S140; m_modules_mask = 3; m_chip_mask = 127; m_module_number = 2; m_chip_number = 7;
+        m_image_size = Size(IMG_COLUMN * m_chip_number, IMG_LINE * m_module_number);
+    }
+    else if	(xpad_model == "XPAD_S1400"){
+        m_xpad_model = XPAD_S1400; m_modules_mask = 1048575; m_chip_mask = 127; m_module_number = 20; m_chip_number = 7;
+        m_image_size = Size(1172 , 1110);
     }
 
     else
@@ -81,9 +91,6 @@ Camera::Camera(string hostname, int port, string xpad_model) : m_hostname(hostna
 
     DEB_TRACE() << "--> Number of Modules 		 = " << m_module_number ;
     DEB_TRACE() << "--> Number of Chips 		 = " << m_chip_number ;
-
-    //ATTENTION: Modules should be ordered!
-    m_image_size = Size(IMG_COLUMN * m_chip_number, IMG_LINE * m_module_number);
     DEB_TRACE() << "--> Image size               = " << m_image_size;
 
 }
@@ -109,8 +116,14 @@ int Camera::init() {
 
     //this->setImageType(Bpp32);
 
-    this->getUSBDeviceList();
-    if (!this->setUSBDevice(0)){
+    if(m_xpad_model < 5){
+        this->getUSBDeviceList();
+        if (!this->setUSBDevice(0)){
+            this->defineDetectorModel(m_xpad_model);
+            ret = this->askReady();
+        }
+    }
+    else{
         this->defineDetectorModel(m_xpad_model);
         ret = this->askReady();
     }
@@ -139,6 +152,7 @@ void Camera::prepareAcq() {
     int value;
     stringstream cmd1;
     cmd1 << "SetExposeParameters " << 1 << " " << m_exp_time_usec << " " << 4000 << " " << m_xpad_trigger_mode << " " << 0;
+   //cmd1 << "SetExposeParameters " << m_cam.m_nb_frames << " " << m_exp_time_usec << " " << 4000 << " " << m_xpad_trigger_mode << " " << 0;
     m_xpad->sendWait(cmd1.str(), value);
     if(!value)
         DEB_TRACE() << "Default exposure parameter applied SUCCESFULLY";
@@ -153,54 +167,6 @@ void Camera::startAcq() {
     m_acq_frame_nb = 0;
     StdBufferCbMgr& buffer_mgr = m_bufferCtrlObj.getBuffer();
     buffer_mgr.setStartTimestamp(Timestamp::now());
-
-    /*    stringstream cmd;
-    string str;
-    int value;
-    int ret, dataSize;
-
-    cmd <<  "Expose";
-    m_xpad->sendWait(cmd.str(), str);
-    if (str.compare("SERVER: Ready to send data")==0){
-        cmd.str(std::string());
-
-        cmd << "CLIENT: Ready to receive dataSize";
-        m_xpad->sendWait(cmd.str(), dataSize);
-
-        DEB_TRACE() << "Receiving: "  << dataSize;
-
-        cmd.str(std::string());
-        cmd << dataSize;
-        m_xpad->sendWait(cmd.str(), ret);
-
-        if(ret == 0){
-            m_xpad->sendNoWait("OK");
-
-            string dataString;
-            int dataCount = 0;
-
-            char data[dataSize];
-            for(int i=0; i<dataSize; i++){
-                value = m_xpad->getChar();
-                data[i] = (char)value;
-                if((value != 32) && (value != 13)){
-                    dataString.append(1,data[i]);
-                }
-                else{
-                    //cout << dataString << " ";
-                    if (xpad_format==0){
-                        buffer_short[dataCount] = atoi(dataString.c_str());
-                    }
-                    else if (xpad_format==1){
-                        buffer_int[dataCount] = atoi(dataString.c_str());
-                    }
-                    dataString.clear();
-                    dataCount++;
-                }
-            }
-            //cout << "Total of data sent: " << dataCount << endl;
-        }
-    }*/
 
     AutoMutex aLock(m_cond.mutex());
     m_wait_flag = false;
@@ -239,12 +205,12 @@ void Camera::readFrame(void *bptr, int frame_nb) {
     if (m_xpad_format==0){
         unsigned short *dptr;
         dptr = (unsigned short *)bptr;
-        std::cout << *dptr << " " << *(dptr+1) << " " << *(dptr+2) << " ... " << *(dptr+67200-3) << " " << *(dptr+67200-2) << " " << *(dptr+67200-1) << std::endl;
+        //std::cout << *dptr << " " << *(dptr+1) << " " << *(dptr+2) << " ... " << *(dptr+67200-3) << " " << *(dptr+67200-2) << " " << *(dptr+67200-1) << std::endl;
     }
     else if (m_xpad_format==1){
         unsigned int *dptr;
         dptr = (unsigned int *)bptr;
-        std::cout << *dptr << " " << *(dptr+1) << " " << *(dptr+2) << " ... " << *(dptr+67200-3) << " " << *(dptr+67200-2) << " " << *(dptr+67200-1) << std::endl;
+        //std::cout << *dptr << " " << *(dptr+1) << " " << *(dptr+2) << " ... " << *(dptr+67200-3) << " " << *(dptr+67200-2) << " " << *(dptr+67200-1) << std::endl;
     }
 
     DEB_TRACE() << "********** Outside of Camera::readFrame ***********";
@@ -264,12 +230,12 @@ void Camera::readFrameExpose(void *bptr, int frame_nb) {
     if (m_xpad_format==0){
         unsigned short *dptr;
         dptr = (unsigned short *)bptr;
-        std::cout << *dptr << " " << *(dptr+1) << " " << *(dptr+2) << " ... " << *(dptr+67200-3) << " " << *(dptr+67200-2) << " " << *(dptr+67200-1) << std::endl;
+        //std::cout << *dptr << " " << *(dptr+1) << " " << *(dptr+2) << " ... " << *(dptr+67200-3) << " " << *(dptr+67200-2) << " " << *(dptr+67200-1) << std::endl;
     }
     else if (m_xpad_format==1){
         unsigned int *dptr;
         dptr = (unsigned int *)bptr;
-        std::cout << *dptr << " " << *(dptr+1) << " " << *(dptr+2) << " ... " << *(dptr+67200-3) << " " << *(dptr+67200-2) << " " << *(dptr+67200-1) << std::endl;
+        //std::cout << *dptr << " " << *(dptr+1) << " " << *(dptr+2) << " ... " << *(dptr+67200-3) << " " << *(dptr+67200-2) << " " << *(dptr+67200-1) << std::endl;
     }
 
     DEB_TRACE() << "********** Outside of Camera::readFrame ***********";
@@ -285,22 +251,22 @@ void Camera::getStatus(XpadStatus& status,bool internal) {
     cmd << "GetStatus";
     
     if(internal || !m_thread_running)
-      {
-	m_xpad->sendWait(cmd.str(), str);
-	pos = str.find(":");
-	string state = str.substr (0, pos);
-	if (state.compare("Idle") == 0) {
-	  status.state = XpadStatus::Idle;
-	} else if (state.compare("Digital_Test") == 0) {
-	  status.state = XpadStatus::Test;
-	} else if (state.compare("Resetting") == 0) {
-	  status.state = XpadStatus::Resetting;
-	} else {
-	  status.state = XpadStatus::Running;
-	}
-      }
+    {
+        m_xpad->sendWait(cmd.str(), str);
+        pos = str.find(":");
+        string state = str.substr (0, pos);
+        if (state.compare("Idle") == 0) {
+            status.state = XpadStatus::Idle;
+        } else if (state.compare("Digital_Test") == 0) {
+            status.state = XpadStatus::Test;
+        } else if (state.compare("Resetting") == 0) {
+            status.state = XpadStatus::Resetting;
+        } else {
+            status.state = XpadStatus::Running;
+        }
+    }
     else
-      status.state = XpadStatus::Running;
+        status.state = XpadStatus::Running;
 
     DEB_TRACE() << "XpadStatus.state is [" << status.state << "]";
 
@@ -443,10 +409,11 @@ void Camera::getDetectorModel(std::string& model) {
     else if(m_xpad_model == XPAD_A10) model = "XPAD_A10";
     else if(m_xpad_model == XPAD_S70) model = "XPAD_S70";
     else if(m_xpad_model == XPAD_S70C) model = "XPAD_S70C";
-    //else if(m_xpad_model == XPAD_S140) model = "XPAD_S140";
+    else if(m_xpad_model == XPAD_S140) model = "XPAD_S140";
     //else if(m_xpad_model == XPAD_S340) model = "XPAD_S340";
     //else if(m_xpad_model == XPAD_S540) model = "XPAD_S540";
     //else if(m_xpad_model == XPAD_S540V) model = "XPAD_S540V";
+    else if (m_xpad_model == XPAD_S1400) model = "XPAD_S1400";
     else throw LIMA_HW_EXC(Error, "Xpad Type not supported");
 }
 
