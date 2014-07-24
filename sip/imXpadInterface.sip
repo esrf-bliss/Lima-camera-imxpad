@@ -37,7 +37,7 @@ class Interface: HwInterface {
 %End
 
 public:
-	Interface(imXpad::Camera& cam);
+	Interface(imXpad::Camera& cam /KeepReference/);
 	virtual ~Interface();
 
  	virtual void getCapList(std::vector<HwCap> &cap_list /Out/) const;
