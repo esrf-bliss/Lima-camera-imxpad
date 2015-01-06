@@ -27,7 +27,7 @@
 #ifndef XPADINTERFACE_H_
 #define XPADINTERFACE_H_
 
-#include "HwInterface.h"
+#include "lima/HwInterface.h"
 
 namespace lima {
 namespace imXpad {

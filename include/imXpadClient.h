@@ -29,7 +29,7 @@
 #define XPADCLIENT_CPP_
 
 #include <netinet/in.h>
-#include "Debug.h"
+#include "lima/Debug.h"
 #include <fstream>
 
 

@@ -19,17 +19,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 //###########################################################################
-#include "HwInterface.h"
-#include "CtControl.h"
-#include "CtAccumulation.h"
-#include "CtAcquisition.h"
-#include "CtSaving.h"
-#include "CtShutter.h"
-#include "Constants.h"
+#include "lima/HwInterface.h"
+#include "lima/CtControl.h"
+#include "lima/CtAccumulation.h"
+#include "lima/CtAcquisition.h"
+#include "lima/CtSaving.h"
+#include "lima/CtShutter.h"
+#include "lima/Constants.h"
 
 #include "imXpadCamera.h"
 #include "imXpadInterface.h"
-#include "Debug.h"
+#include "lima/Debug.h"
 //#include "Exception.h"
 #include <iostream>
 #include <unistd.h>

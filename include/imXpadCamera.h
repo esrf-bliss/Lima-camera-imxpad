@@ -31,12 +31,12 @@
 #include <limits>
 #include <stdarg.h>
 #include <strings.h>
-#include "HwMaxImageSizeCallback.h"
-#include "HwBufferMgr.h"
-#include "HwInterface.h"
+#include "lima/HwMaxImageSizeCallback.h"
+#include "lima/HwBufferMgr.h"
+#include "lima/HwInterface.h"
 #include "imXpadInterface.h"
 #include <ostream>
-#include "Debug.h"
+#include "lima/Debug.h"
 #include "imXpadClient.h"
 
 namespace lima {

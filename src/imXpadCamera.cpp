@@ -30,8 +30,8 @@
 #include <math.h>
 #include <iomanip>
 #include "imXpadCamera.h"
-#include "Exceptions.h"
-#include "Debug.h"
+#include "lima/Exceptions.h"
+#include "lima/Debug.h"
 #include <unistd.h>
 
 using namespace lima;
