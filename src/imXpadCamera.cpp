@@ -71,11 +71,11 @@ Camera::Camera(string hostname, int port, string xpad_model) : m_hostname(hostna
     
     if	(xpad_model == "XPAD_S70"){
         m_xpad_model = XPAD_S70; m_modules_mask = 1; m_chip_mask = 127; m_module_number = 1; m_chip_number = 7;
-        m_image_size = Size(IMG_COLUMN * m_chip_number, IMG_LINE * m_module_number);
+        m_image_size = Size(576, 118);
     }
     else if	(xpad_model == "XPAD_S70C"){
         m_xpad_model = XPAD_S70; m_modules_mask = 1; m_chip_mask = 127; m_module_number = 1; m_chip_number = 7;
-        m_image_size = Size(IMG_COLUMN * m_chip_number, IMG_LINE * m_module_number);
+        m_image_size = Size(576, 118);
     }
     else if	(xpad_model == "XPAD_S140"){
         m_xpad_model = XPAD_S140; m_modules_mask = 3; m_chip_mask = 127; m_module_number = 2; m_chip_number = 7;
