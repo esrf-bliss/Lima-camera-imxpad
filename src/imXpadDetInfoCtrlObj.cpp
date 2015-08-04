@@ -13,62 +13,62 @@ using namespace lima;
 using namespace lima::imXpad;
 
 DetInfoCtrlObj::DetInfoCtrlObj(Camera& cam) : m_cam(cam) {
-	DEB_CONSTRUCTOR();
+    DEB_CONSTRUCTOR();
 }
 
 DetInfoCtrlObj::~DetInfoCtrlObj() {
-	DEB_DESTRUCTOR();
+    DEB_DESTRUCTOR();
 }
 
 void DetInfoCtrlObj::getMaxImageSize(Size& size) {
-	DEB_MEMBER_FUNCT();
-    m_cam.getDetectorImageSize(size);
+    DEB_MEMBER_FUNCT();
+    m_cam.getImageSize(size);
 }
 
 void DetInfoCtrlObj::getDetectorImageSize(Size& image_size) {
     DEB_MEMBER_FUNCT();
-   //getMaxImageSize(image_size);
-    m_cam.getDetectorImageSize(image_size);
+    //getMaxImageSize(image_size);
+    m_cam.getImageSize(image_size);
 
 }
 
 void DetInfoCtrlObj::getDefImageType(ImageType& image_type) {
-	DEB_MEMBER_FUNCT();
-	m_cam.getImageType(image_type);
+    DEB_MEMBER_FUNCT();
+    m_cam.getImageType(image_type);
 }
 
 void DetInfoCtrlObj::getCurrImageType(ImageType& image_type) {
-	DEB_MEMBER_FUNCT();
-	m_cam.getImageType(image_type);
+    DEB_MEMBER_FUNCT();
+    m_cam.getImageType(image_type);
 }
 
 void DetInfoCtrlObj::setCurrImageType(ImageType image_type) {
-	DEB_MEMBER_FUNCT();
-	m_cam.setImageType(image_type);
+    DEB_MEMBER_FUNCT();
+    m_cam.setImageType(image_type);
 }
 
 void DetInfoCtrlObj::getPixelSize(double& xsize, double& ysize) {
-	DEB_MEMBER_FUNCT();
-	m_cam.getPixelSize(xsize, ysize);
+    DEB_MEMBER_FUNCT();
+    m_cam.getPixelSize(xsize, ysize);
 }
 
 void DetInfoCtrlObj::getDetectorType(std::string& type) {
-	DEB_MEMBER_FUNCT();
-	m_cam.getDetectorType(type);
+    DEB_MEMBER_FUNCT();
+    m_cam.getDetectorType(type);
 }
 
 void DetInfoCtrlObj::getDetectorModel(std::string& model) {
-	DEB_MEMBER_FUNCT();
-	m_cam.getDetectorModel(model);
+    DEB_MEMBER_FUNCT();
+    m_cam.getDetectorModel(model);
 }
 
 void DetInfoCtrlObj::registerMaxImageSizeCallback(HwMaxImageSizeCallback& cb) {
-	DEB_MEMBER_FUNCT();
-//	m_cam->registerMaxImageSizeCallback(cb);
+    DEB_MEMBER_FUNCT();
+    //	m_cam->registerMaxImageSizeCallback(cb);
 }
 
 void DetInfoCtrlObj::unregisterMaxImageSizeCallback(HwMaxImageSizeCallback& cb) {
-	DEB_MEMBER_FUNCT();
-//	m_cam->unregisterMaxImageSizeCallback(cb);
+    DEB_MEMBER_FUNCT();
+    //	m_cam->unregisterMaxImageSizeCallback(cb);
 }
 

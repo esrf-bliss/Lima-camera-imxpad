@@ -21,19 +21,10 @@
 //###########################################################################
 #include "lima/HwInterface.h"
 #include "lima/CtControl.h"
-#include "lima/CtAccumulation.h"
 #include "lima/CtAcquisition.h"
 #include "lima/CtSaving.h"
-#include "lima/CtShutter.h"
-#include "lima/Constants.h"
 
 #include "imXpadCamera.h"
-#include "imXpadInterface.h"
-#include "lima/Debug.h"
-//#include "Exception.h"
-#include <iostream>
-#include <unistd.h>
-#include <sys/stat.h>
 
 using namespace std;
 using namespace lima;
@@ -44,118 +35,45 @@ DEB_GLOBAL(DebModTest);
 int main(int argc, char *argv[])
 {
     DEB_GLOBAL_FUNCT();
-    //	DebParams::setModuleFlags(DebParams::AllFlags);
-    //	DebParams::setTypeFlags(DebParams::AllFlags);
     DebParams::setTypeFlags(lima::DebTypeTrace);
-    //	DebParams::setFormatFlags(DebParams::AllFlags);
+    //DebParams::setFormatFlags(DebParams::AllFlags);
 
-    Camera *m_camera;
-    Interface *m_interface;
-    CtControl* m_control;
+    Camera 		*cam;
+    Interface 	*HWI;
+    CtControl   *CT;
 
-    //Xpad configuration properties
-    string hostname = "127.0.0.1";
-    string xpad_model = "XPAD_S70C";
-
-    hostname = argv[1];
+    string hostname = argv[1];
     int port = atoi(argv[2]);
 
-    try {
+    cam = new Camera(hostname, port);
+    HWI = new Interface(*cam);
+    CT = new CtControl(HWI);
+    CtSaving *CTs = CT->saving();
+    CtAcquisition *CTa = CT->acquisition();
 
-        unsigned short *ret = new unsigned short[8];
-        Camera::XpadStatus status;
-        //int nframes = 1;
+    CTs->setDirectory("./Images");
+    CTs->setFormat(CtSaving::EDF);
+    CTs->setPrefix("id24_");
+    CTs->setSuffix(".edf");
+    CTs->setSavingMode(CtSaving::AutoFrame);
+    //CTs->setSavingMode(CtSaving::Manual);
+    CTs->setOverwritePolicy(CtSaving::Overwrite);
 
-        //MUST BE SET BEFORE CREATING AN INTERFACE
-        m_camera = new Camera(hostname, port, xpad_model);
-        m_camera->setImageType(Bpp32);
+    CTa->setAcqExpoTime(1);
+    CTa->setAcqNbFrames(1);
 
-        //CREATING AN INTERFACE AND A CONTROL
-        m_interface = new Interface(*m_camera);
-        m_control = new CtControl(m_interface);
+    cam->calibrationBEAM(100,50,0);
+    cam->waitAcqEnd();
+    cam->calibrationBEAM(100,50,0);
+    cam->waitAcqEnd();
 
-        if(!m_camera->init()){
+    /*for (int i=0; i<10; i++){
+		cout << i << endl;
+        CT->prepareAcq();
+        CT->startAcq();
+        sleep(1);
+        CT->stopAcq();
+    }*/
 
-            //****DIGITAL TEST
-            //if(!m_camera->digitalTest(40,Camera::XpadDigitalTest::Strips)){
-/*
-            int frame_number = 0;
-
-            unsigned int val;
-            unsigned int *image = new unsigned int[67200];
-
-            //Command to recover Digital Test image
-            m_camera->readFrame(image, frame_number);
-
-                //Saving Digital Test image to disk
-                mkdir("./Images",S_IRWXU |  S_IRWXG |  S_IRWXO);
-                ofstream file("./Images/DigitalTest.raw", ios::out|ios::binary);
-                if (file.is_open()){
-                    for (int i=0;i<120;i++) {
-                        for (int j=0;j<560;j++){
-                            val = image[i*560+j];
-                            file.write((char *)&val, sizeof(unsigned int));
-                        }
-                    }
-                    file.close();
-                }
-            //}
-*/
-/*            //****GLOBAL CONFIGURATION FONCTIONS
-            m_camera->loadConfigG(IMFP,0);
-            m_camera->loadConfigG(ITHL,0);
-            m_camera->readConfigG(ITUNE,ret);
-
-            cout << "Global Configuration readed with SUCCESS" << endl << "Register = "\
-                 << ret[0] << " Values: " << ret[1] << " " << ret[2] << " " << ret[3] << " "\
-                 << ret[4] << " " << ret[5] << " " << ret[6] << " " << ret[7];
-
-            m_camera->loadDefaultConfigGValues();
-
-            m_camera->ITHLIncrease();
-            m_camera->ITHLDecrease();
-            m_camera->loadConfigGFromFile("./Calibration/ConfigGlobalSlow.cfg");
-
-            m_camera->saveConfigGToFile("./ConfigGlobalTest.cfg");
-
-            //****LOCAL CONFIGURATION FONCTIONS
-*/          //m_camera->loadFlatConfigL(30);
-            //m_camera->loadConfigLFromFile("./Calibration/ConfigLocalSlow.cfl");
-            //m_camera->saveConfigLToFile("./ConfigLocalTest.clf");
-
-/*
-            //****CALIBRATION OVER THE NOISE
-            mkdir("./Calibration",S_IRWXU |  S_IRWXG |  S_IRWXO);
-            m_camera->calibrationOTN(Camera::Calibration::Slow);
-            m_camera->saveConfigLToFile("./Calibration/ConfigLocalSlow.cfl");
-            m_camera->saveConfigGToFile("./Calibration/ConfigGlobalSlow.cfg");
-*/
-
-            CtSaving* saving = m_control->saving();
-            saving->setDirectory("./Images");
-            saving->setFormat(CtSaving::EDF);
-            saving->setPrefix("id24_");
-            saving->setSuffix(".edf");
-            saving->setSavingMode(CtSaving::AutoFrame);
-            //saving->setSavingMode(CtSaving::Manual);
-            saving->setOverwritePolicy(CtSaving::Overwrite);
-
-            int nframes = 1;
-            m_camera->setTrigMode(lima::IntTrig);
-            m_control->acquisition()->setAcqExpoTime(1);
-            m_control->acquisition()->setAcqNbFrames(nframes);
-            m_control->prepareAcq();
-            m_control->startAcq();
-            m_camera->stopAcq();
-
-            //m_camera->resetModules();
-            m_camera->exit();
-        }
-
-    } catch (Exception e) {
-        DEB_ERROR() << "LIMA Exception: " << e;
-    } catch (...) {
-        DEB_ERROR() << "Unkown exception!";
-    }
     return 0;
 }

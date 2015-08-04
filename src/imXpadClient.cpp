@@ -56,7 +56,7 @@
 const int MAX_ERRMSG = 1024;
 const int CR = '\15';				// carriage return
 const int LF = '\12';				// line feed
-const char QUIT[] = "quit\n";		// sent using 'send'
+const char QUIT[] = "Exit\n";		// sent using 'send'
 
 using namespace std;
 using namespace lima;
@@ -79,7 +79,6 @@ XpadClient::~XpadClient() {
 }
 
 void XpadClient::sendWait(string cmd) {
-    cout << "Inside sendWait" << endl;
     DEB_MEMBER_FUNCT();
     int rc;
     DEB_TRACE() << "sendWait(" << cmd << ")";
@@ -98,7 +97,6 @@ void XpadClient::sendWait(string cmd) {
 }
 
 void XpadClient::sendWait(string cmd, int& value) {
-    cout << "Inside sendWait" << endl;
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "sendWait(" << cmd << ")";
     AutoMutex aLock(m_cond.mutex());
@@ -152,187 +150,191 @@ void XpadClient::sendNoWait(string cmd) {
     sendCmd(cmd);
 }
 
-void XpadClient::getData(void *bptr, int num, unsigned short xpad_format) {
+int XpadClient::sendParametersFile(char* filePath){
+
+    DEB_MEMBER_FUNCT();
+    DEB_TRACE() << "sendFile(" << filePath << ")";
+    
+    sleep(0.5);
+    
+    ifstream file(filePath, ios::in|ios::binary);
+    if (file.is_open()){
+
+        stringstream data;
+        uint32_t data_size; //htonl(10);
+        char data_size_buffer[sizeof(uint32_t)];
+        
+        int count = 0;
+        while(!file.eof()){
+            char temp;
+            file.read((char*)&temp, sizeof(char));
+            data << temp;
+            count ++;
+        }
+        data_size = (uint32_t) count;
+
+        memcpy(&data_size_buffer, &data_size, sizeof(uint32_t));
+        
+        DEB_TRACE() << "Data size = " << data_size;
+
+        write(m_skt, data_size_buffer, sizeof(uint32_t));
+        write(m_skt, data.str().c_str(), data_size);
+        this->getChar();
+
+        file.close();
+        
+        int ret;
+        string message;
+        
+        this->waitForResponse(ret);
+        if (ret == -1){
+            this->waitForResponse(message);
+            DEB_TRACE() << message;
+        }
+        return ret;
+    }
+    else
+        return -1;
+}
+
+int XpadClient::receiveParametersFile(char* filePath){
+    DEB_MEMBER_FUNCT();
+
+    uint32_t data_size = 0;
+    uint32_t bytes_received = 0;
+
+    unsigned char data_chain[sizeof(uint32_t)];
+
+    while (read(m_skt, data_chain, sizeof(uint32_t)) < 0);
+    
+    for(int i=0; i<sizeof(uint32_t); i++)
+        this->getChar();
+
+    data_size = data_chain[3]<<24|data_chain[2]<<16|data_chain[1]<<8|data_chain[0];
+
+    if (data_size > 0){
+        ofstream file(filePath, ios::out);
+        if (file.is_open()){
+            for(int i=0; i<data_size; i++){
+                file << (char) this->getChar();
+            }
+
+            stringstream message;
+            message << "File received\n";
+            string tmp = message.str();
+            write(m_skt,(char *)tmp.c_str(),tmp.length());
+
+            return 0;
+        }
+        else{
+            stringstream message;
+            message << "File not saved into file\n";
+            string tmp = message.str();
+            write(m_skt,(char *)tmp.c_str(),tmp.length());
+
+            return -1;
+        }
+    }
+    else{
+        stringstream message;
+        message << "File not received\n";
+        string tmp = message.str();
+        write(m_skt,(char *)tmp.c_str(),tmp.length());
+
+        return -1;
+    }
+}
+
+void XpadClient::sendExposeCommand(){
     DEB_MEMBER_FUNCT();
 
     stringstream cmd;
-    string str;
-    int value;
-    int ret, dataSize;
-    unsigned short *buffer_short;
-    unsigned int *buffer_int;
 
-    if (xpad_format==0)
-        buffer_short = (unsigned short *)bptr;
-
-    else if (xpad_format==1)
-        buffer_int = (unsigned int *)bptr;
-
-    cmd << "ReadImage";
-    sendWait(cmd.str(), str);
-    if (str.compare("SERVER: Ready to send data")==0){
-        cmd.str(std::string());
-
-        cmd << "CLIENT: Ready to receive dataSize";
-        sendWait(cmd.str(), dataSize);
-
-        DEB_TRACE() << "Receiving: "  << dataSize;
-
-        cmd.str(std::string());
-        cmd << dataSize;
-        sendWait(cmd.str(), ret);
-
-        if(ret == 0){
-            sendNoWait("OK");
-
-            string dataString;
-            int dataCount = 0;
-
-            char data[dataSize];
-            for(int i=0; i<dataSize; i++){
-                value = getChar();
-                data[i] = (char)value;
-                if((value != 32) && (value != 13)){
-                    dataString.append(1,data[i]);
-                }
-                else{
-                    //cout << dataString << " ";
-                    //cout << dataCount <<  " ";
-                    if (xpad_format==0){
-                        buffer_short[dataCount] = (unsigned short) atoi(dataString.c_str());
-                    }
-                    else if (xpad_format==1){
-                        buffer_int[dataCount] = (unsigned int) atoi(dataString.c_str());
-                    }
-                    dataString.clear();
-                    dataCount++;
-                }
-            }
-            cout << "Total of data sent: " << dataCount << endl;
-        }
-    }
-
-    else
-        THROW_HW_ERROR(Error) << "Read data from server FAILED";
+    cmd << "StartExposure";
+    sendNoWait(cmd.str());
 }
 
-void XpadClient::getDataExpose(void *bptr, int num, unsigned short xpad_format) {
+int XpadClient::getDataExpose(void *bptr, unsigned short xpadFormat) {
     DEB_MEMBER_FUNCT();
 
-    stringstream cmd;
-    string str;
-    int value;
-    int ret, dataSize;
-    unsigned short *buffer_short;
-    unsigned int *buffer_int;
+    uint16_t *buffer_short;
+    uint32_t *buffer_int;
+    int32_t *data_buff;
 
-    if (xpad_format==0)
-        buffer_short = (unsigned short *)bptr;
-
-    else if (xpad_format==1)
-        buffer_int = (unsigned int *)bptr;
-
-    cmd << "Expose";
-    sendWait(cmd.str(), str);
-    if (str.compare("SERVER: Ready to send data")==0){
-        cmd.str(std::string());
-
-        cmd << "CLIENT: Ready to receive dataSize";
-        sendWait(cmd.str(), dataSize);
-
-        DEB_TRACE() << "Receiving: "  << dataSize;
-
-        cmd.str(std::string());
-        cmd << dataSize;
-        sendWait(cmd.str(), ret);
-
-        if(ret == 0){
-            sendNoWait("OK");
-
-            string dataString;
-            int dataCount = 0;
-
-            char data[dataSize];
-            for(int i=0; i<dataSize; i++){
-                value = getChar();
-                data[i] = (char)value;
-                if((value != 32) && (value != 13)){
-                    dataString.append(1,data[i]);
-                }
-                else{
-                    //cout << dataString << " ";
-                    //cout << dataCount <<  " ";
-                    if (xpad_format==0){
-                        buffer_short[dataCount] = (unsigned short) atoi(dataString.c_str());
-                    }
-                    else if (xpad_format==1){
-                        buffer_int[dataCount] = (unsigned int) atoi(dataString.c_str());
-                    }
-                    dataString.clear();
-                    dataCount++;
-                }
-            }
-            cout << "Total of data sent: " << dataCount << endl;
-        }
-    }
-
+    if (xpadFormat==0)
+        buffer_short = (uint16_t *)bptr;
     else
-        THROW_HW_ERROR(Error) << "Read data from server FAILED";
+        buffer_int = (uint32_t *)bptr;
+
+    uint32_t data_size = 0;
+    uint32_t line_final_image = 0;
+    uint32_t column_final_image = 0;
+    uint32_t bytes_received = 0;
+
+    unsigned char data_chain[3*sizeof(uint32_t)];
+
+    while (read(m_skt, data_chain, 3*sizeof(uint32_t)) < 0);
+
+    data_size = data_chain[3]<<24|data_chain[2]<<16|data_chain[1]<<8|data_chain[0];
+    line_final_image = data_chain[7]<<24|data_chain[6]<<16|data_chain[5]<<8|data_chain[4];
+    column_final_image = data_chain[11]<<24|data_chain[10]<<16|data_chain[9]<<8|data_chain[8];
+
+    //DEB_TRACE() << data_size << " " << line_final_image << " " << column_final_image;
+
+    if(data_size > 0 && data_chain[0] != '*'){
+
+        unsigned char data[data_size];
+        data_buff = new int32_t[line_final_image*column_final_image ];
+
+        ssize_t bytes;
+        while(bytes_received < data_size){
+            while ((bytes = read(m_skt, data+bytes_received, data_size-bytes_received)) < 0);
+            bytes_received += bytes;
+            //cout << "\tReceived " << bytes_received << " out of " << data_size << " Bytes" << endl;
+        }
+
+        //stringstream message;
+        //message << "Image received\n";
+        //string tmp = message.str();
+        //write(m_skt,(char *)tmp.c_str(),tmp.length());
+        write(m_skt,"\n",sizeof(char));
+
+        uint32_t count = 0;
+        int i=0;
+        while (count < data_size){
+
+            if (xpadFormat==0){
+                memcpy (&data_buff[i], &data[count], sizeof(int32_t) );
+                buffer_short[i] = (uint16_t)(data_buff[i]);
+            }
+            else{
+                memcpy (&data_buff[i], &data[count], sizeof(int32_t) );
+                buffer_int[i] = (uint32_t)(data_buff[i]);
+            }
+            count += sizeof(int32_t);
+            i++;
+        }
+
+        delete[] data_buff;
+
+        return 0;
+
+    }
+    else{
+        write(m_skt,"\n",sizeof(char));
+        return -1;
+    }
 }
 
-/*
-void XpadClient::getData(void *bptr, int num, unsigned int xpad_format ) {
+void XpadClient::getExposeCommandReturn(int &value){
     DEB_MEMBER_FUNCT();
-    int rc;
-    int dataPort;
-    unsigned short value_short;
-    unsigned int value_int;
-    unsigned short *buffer_short;
-    unsigned int *buffer_int;
-
-
-    int IMG_LINE = 120;
-    int IMG_NUMBER = num * 80;
-    int readsize = IMG_LINE * IMG_NUMBER;
-
-    if (xpad_format==0)
-        buffer_short = (unsigned short *)bptr;
-
-    else if (xpad_format==1)
-        buffer_int = (unsigned int *)bptr;
-
-    // Allow the server to connect to our data port.
-    struct sockaddr_in addr;
-    int size = sizeof(struct sockaddr_in);
-
-    dataPort = accept(m_data_listen_skt, (struct sockaddr *) &addr, (socklen_t*)&size);
-
-    if (dataPort < 0) {
-        THROW_HW_ERROR(Error) << "Server could not to connect to our data port";
-    }
-
-    for (int i=0 ; i<readsize; i++){
-        if (xpad_format==0){
-            read(dataPort, &value_short, sizeof(unsigned short));
-            buffer_short[i]=value_short;
-        }
-        else if (xpad_format==1){
-            read(dataPort, &value_int, sizeof(unsigned int));
-            buffer_int[i]=value_int;
-        }
-    }
-
-    close(dataPort);
-    if (rc < 0) {
-        THROW_HW_ERROR(Error) << "Read error from data port " << dataPort;
-    }
+    waitForResponse(value);
 }
-*/
 
 /*
  * Connect to remote server
  */
-int XpadClient::connectToServer(const string hostname, int port) {
+int XpadClient::connectToServer(const string hostName, int port) {
     DEB_MEMBER_FUNCT();
     struct hostent *host;
     struct protoent *protocol;
@@ -343,7 +345,7 @@ int XpadClient::connectToServer(const string hostname, int port) {
         m_errorMessage = "Already connected to server";
         return -1;
     }
-    if ((host = gethostbyname(hostname.c_str())) == 0) {
+    if ((host = gethostbyname(hostName.c_str())) == 0) {
         m_errorMessage = "can't get gethostbyname";
         endhostent();
         return -1;
@@ -387,7 +389,6 @@ int XpadClient::connectToServer(const string hostname, int port) {
 void XpadClient::disconnectFromServer() {
     DEB_MEMBER_FUNCT();
     if (m_valid) {
-        send(m_skt, QUIT, strlen(QUIT), 0);
         shutdown(m_skt, 2);
         close(m_skt);
         m_valid = 0;
@@ -395,7 +396,7 @@ void XpadClient::disconnectFromServer() {
 }
 
 int XpadClient::initServerDataPort() {
-    cout << "Inside initServerDataPort" << endl;
+    //cout << "Inside initServerDataPort" << endl;
     DEB_MEMBER_FUNCT();
     struct sockaddr_in data_addr;
     int len = sizeof(struct sockaddr_in);
@@ -441,7 +442,7 @@ int XpadClient::initServerDataPort() {
         if (waitForResponse(null) == -1)
             return -1;
     }
-    cout << "Getting out of initServerDataPort" << endl;
+    //cout << "Getting out of initServerDataPort" << endl;
     return m_data_port;
 }
 
@@ -454,8 +455,8 @@ vector<string> XpadClient::getDebugMessages() const {
 }
 
 void XpadClient::sendCmd(const string cmd) {
-    cout << "Inside sendCmd" << endl;
-    cout << "--- cmd: " << cmd << endl;
+    //cout << "Inside sendCmd" << endl;
+    cout << "cmd: " << cmd << endl;
     DEB_MEMBER_FUNCT();
     int r, len;
     char *p;
@@ -472,11 +473,11 @@ void XpadClient::sendCmd(const string cmd) {
         THROW_HW_ERROR(Error) << "Sending command " << cmd << " to server failed";
     }
 
-    cout << "Getting out of sendCmd" << endl;
+    //cout << "Getting out of sendCmd" << endl;
 }
 
 int XpadClient::waitForPrompt() {
-    cout << "Inside waitForPrompt" << endl;
+    //cout << "Inside waitForPrompt" << endl;
     DEB_MEMBER_FUNCT();
     int r;
     char tmp;
@@ -497,7 +498,7 @@ int XpadClient::waitForPrompt() {
     } else {
         m_prompts--;
     }
-    cout << "Getting out of waitForPrompt" << endl;
+    //cout << "Getting out of waitForPrompt" << endl;
     return 0;
 }
 
@@ -505,7 +506,7 @@ int XpadClient::waitForPrompt() {
  *  Wait for an integer response
  */
 int XpadClient::waitForResponse(int& value) {
-    cout << "Inside waitForResponse" << endl;
+    //cout << "Inside waitForResponse" << endl;
     DEB_MEMBER_FUNCT();
     int r, code, done, outoff;
     string errmsg;
@@ -523,9 +524,11 @@ int XpadClient::waitForResponse(int& value) {
             return -1;
         case CLN_NEXT_ERRMSG:
             errmsg_handler(errmsg);
+            cout << "\t---> message: " << errmsg << endl;
             break;
         case CLN_NEXT_DEBUGMSG:
             debugmsg_handler(errmsg);
+            cout << "\t---> message: " << errmsg << endl;
             break;
         case CLN_NEXT_UNKNOWN:
             error_handler("Unknown string from server: "+ errmsg);
@@ -535,7 +538,11 @@ int XpadClient::waitForResponse(int& value) {
             break;
         case CLN_NEXT_INTRET:
             value = code;
-            cout << "--- Value: " << value << endl;
+            cout << "\t---> value: " << value << endl;
+            if (value == -1){
+                string error_message;
+                waitForResponse(error_message);
+            }
             return 0;
         case CLN_NEXT_DBLRET:
             error_handler("Unexpected double return code.");
@@ -547,7 +554,7 @@ int XpadClient::waitForResponse(int& value) {
             THROW_HW_ERROR(Error) << "Programming error. Please report";
         }
     }
-    cout << "Getting out of waitForResponse" << endl;
+    //cout << "Getting out of waitForResponse" << endl;
     return 0;
 }
 
@@ -573,9 +580,11 @@ int XpadClient::waitForResponse(double& value) {
             return -1;
         case CLN_NEXT_ERRMSG:
             errmsg_handler(errmsg);
+            cout << "\t---> message: " << errmsg << endl;
             break;
         case CLN_NEXT_DEBUGMSG:
             debugmsg_handler(errmsg);
+            cout << "\t---> message: " << errmsg << endl;
             break;
         case CLN_NEXT_UNKNOWN:
             error_handler("Unknown string from server: "+ errmsg);
@@ -588,6 +597,7 @@ int XpadClient::waitForResponse(double& value) {
             return -1;
         case CLN_NEXT_DBLRET:
             value = code;
+            cout << "\t---> value: " << value << endl;
             return 0;
         case CLN_NEXT_STRRET:
             error_handler("Server responded with a string.");
@@ -620,9 +630,11 @@ int XpadClient::waitForResponse(string& value) {
             return -1;
         case CLN_NEXT_ERRMSG:
             errmsg_handler(errmsg);
+            cout << "\t---> message: " << errmsg << endl;
             break;
         case CLN_NEXT_DEBUGMSG:
             debugmsg_handler(errmsg);
+            cout << "\t---> message: " << errmsg << endl;
             break;
         case CLN_NEXT_UNKNOWN:
             error_handler("Unknown string from server.");
@@ -637,7 +649,7 @@ int XpadClient::waitForResponse(string& value) {
             error_handler("Server responded with a double");
             return -1;
         case CLN_NEXT_STRRET:
-            cout << "--- Message: " << value << endl;
+            cout << "\t---> message: " << value << endl;
             return (value.length() == 0) ? -1 : 0;
         default:
             THROW_HW_ERROR(Error) << "Programming error. Please report";
@@ -650,7 +662,7 @@ int XpadClient::waitForResponse(string& value) {
  * Get the next line from the server
  */
 int XpadClient::nextLine(string *errmsg, int *ivalue, double *dvalue, string *svalue, int *done, int *outoff) {
-    cout << "Inside nextline " << endl;
+    //cout << "Inside nextline " << endl;
     DEB_MEMBER_FUNCT();
     int r;
     char timestr[80], *tp;
