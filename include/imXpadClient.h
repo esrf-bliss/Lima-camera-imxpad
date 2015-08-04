@@ -29,8 +29,9 @@
 #define XPADCLIENT_CPP_
 
 #include <netinet/in.h>
-#include "Debug.h"
+#include "lima/Debug.h"
 #include <fstream>
+#include <arpa/inet.h>
 
 
 namespace lima {
@@ -54,8 +55,12 @@ public:
 	int connectToServer (const std::string hostname, int port);
 	void disconnectFromServer();
 	int initServerDataPort();
-    void getData(void* bptr, int num, unsigned short xpad_format);
-    void getDataExpose(void* bptr, int num, unsigned short xpad_format);
+    //void getData(void* bptr, unsigned short xpad_format);
+    int sendParametersFile(char* filePath);
+    int receiveParametersFile(char* filePath);
+    void sendExposeCommand();
+    int getDataExpose(void* bptr, unsigned short xpadFormat);
+    void getExposeCommandReturn(int &value);
 	std::string getErrorMessage() const;
 	std::vector<std::string> getDebugMessages() const;
     int getChar();

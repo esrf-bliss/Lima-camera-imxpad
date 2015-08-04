@@ -31,13 +31,14 @@
 #include <limits>
 #include <stdarg.h>
 #include <strings.h>
-#include "HwMaxImageSizeCallback.h"
-#include "HwBufferMgr.h"
-#include "HwInterface.h"
+#include "lima/HwMaxImageSizeCallback.h"
+#include "lima/HwBufferMgr.h"
+#include "lima/HwInterface.h"
 #include "imXpadInterface.h"
-#include <ostream>
-#include "Debug.h"
+#include "lima/Debug.h"
 #include "imXpadClient.h"
+#include <unistd.h>
+#include <sys/time.h>
 
 namespace lima {
 namespace imXpad {
@@ -59,15 +60,17 @@ public:
     public:
         enum XpadState {
             Idle, ///< The detector is not acquiringing data
-            Test, ///< The detector is performing a digital test
-            Resetting, ///< The detector is resetting.
-            Running ///< The detector is acquiring data.
+            Acquiring, ///< The detector is acquiring data  
+            CalibrationManipulation, ///< The detector is loading or saving calibrations
+            Calibrating,          
+            DigitalTest, ///< The detector is performing a digital test
+            Resetting ///< The detector is resetting.
         };
+
         XpadState state;
         int frame_num; ///< The current frame number, within a group, being acquired, only valid when not {@link #Idle}
         int completed_frames; ///< The number of frames completed, only valid when not {@link #Idle}
     };
-
     struct XpadDigitalTest{
         enum DigitalTest {
             Flat, ///< Test using a flat value all over the detector
@@ -75,50 +78,90 @@ public:
             Gradient ///< Test using a gradient values all over the detector
         };
     };
-
     struct Calibration{
-        enum OTN{
+        enum Configuration{
             Slow,
             Medium,
             Fast
         };
     };
+    struct XpadAcquisitionMode{
+        enum AcquisitionMode{
+            Standard,
+            DetectorBurst,
+            ComputerBurst,
+            Stacking16bits,
+            Stacking32bits,
+            SingleBunch16bits,
+            SingleBunch32bits
+        };
+    };
+    struct XpadOutputSignal{
+        enum OutputSignal{
+            ExposureBusy,
+            ShutterBusy,
+            BusyUpdateOverflow,
+            PixelCounterEnabled,
+            ExternalGate,
+            ExposureReadDone,
+            DataTransfer,
+            RAMReadyImageBusy,
+            XPADToLocalDDR,
+            LocalDDRToPC
 
-    Camera(std::string hostname, int port, std::string xpad_model);
+        };
+    };
+    struct XpadImageFileFormat{
+        enum ImageFileFormat{
+            Ascii,
+            Binary
+        };
+    };
+
+    Camera(std::string hostname, int port);
     ~Camera();
 
     int init();
+    void quit();
     void reset();
-    void prepareAcq();
+    int prepareAcq();
     void startAcq();
     void stopAcq();
+    void waitAcqEnd();
 
     // -- detector info object
     void getImageType(ImageType& type);
     void setImageType(ImageType type);
     void getDetectorType(std::string& type);
     void getDetectorModel(std::string& model);
-    void getDetectorImageSize(Size& size);
+    void getImageSize(Size& size);
     void getPixelSize(double& size_x, double& size_y);
+    void getModuleMask();
+    void getModuleNumber();
+    void getChipMask();
+    void getChipNumber();
 
     // -- Buffer control object
     HwBufferCtrlObj* getBufferCtrlObj();
     void setNbFrames(int nb_frames);
     void getNbFrames(int& nb_frames);
-    void readFrame(void *ptr, int frame_nb);
-    void readFrameExpose(void *ptr, int frame_nb);
+    void sendExposeCommand();
+    int readFrameExpose(void *ptr, int frame_nb);
+    int getDataExposeReturn();
     int getNbHwAcquiredFrames();
 
     //-- Synch control object
     void setTrigMode(TrigMode mode);
     void getTrigMode(TrigMode& mode);
+    void setOutputSignalMode(unsigned short mode);
+    void getOutputSignalMode(unsigned short& mode);
     void setExpTime(double exp_time);
     void getExpTime(double& exp_time);
     void setLatTime(double lat_time);
     void getLatTime(double& lat_time);
 
     //-- Status
-    void getStatus(XpadStatus& status,bool = false);
+    void getStatus(XpadStatus& status);
     bool isAcqRunning() const;
 
     //---------------------------------------------------------------
@@ -129,14 +172,14 @@ public:
     //! Connect to a selected QuickUSB device
     int setUSBDevice(unsigned short module);
 
-    //! Define the Detecto Model
-    int defineDetectorModel(unsigned short model);
+    //! Define the Detector Model
+    //int defineDetectorModel(unsigned short model);
 
     //! Check if detector is Ready to work
     int askReady();
 
     //! Perform a Digital Test
-    int digitalTest(unsigned short DT_value, unsigned short mode);
+    int digitalTest(unsigned short mode);
 
     //! Read global configuration values from file and load them in the detector
     int loadConfigGFromFile(char *fpath);
@@ -145,10 +188,10 @@ public:
     int saveConfigGToFile(char *fpath);
 
     //! Send value to register for all chips in global configuration
-    int loadConfigG(unsigned short reg, unsigned short value);
+    int loadConfigG(char *regID, unsigned short value);
 
     //! Read values from register and from all chips in global configuration
-    int readConfigG(unsigned short reg, void *values);
+    int readConfigG(char *regID);
 
     //! Load default values for global configuration
     int loadDefaultConfigGValues();
@@ -168,35 +211,109 @@ public:
     //! Save local configuration values from detector to file
     int saveConfigLToFile(char *fpath);
 
-    //! Set the exposure parameters
-    int setExposureParameters(unsigned int NumImage, double Texp,double Tovf,unsigned short trigger_mode,unsigned short BusyOutSel);
+    //! Set flag for geometrical corrections
+    void setGeometricalCorrectionFlag(unsigned short flag);
+
+    //! Get flag for geometrical corrections
+    unsigned short getGeometricalCorrectionFlag();
+
+    //! Set flag for flat field corrections
+    void setFlatFieldCorrectionFlag(unsigned short flag);
+
+    //! Get flag for flat field corrections
+    unsigned short getFlatFieldCorrectionFlag();
+
+    //! Set acquisition mode
+    void setAcquisitionMode(unsigned int mode);
+
+    //! Get acquisition mode
+    unsigned int getAcquisitionMode();
+
+    //! Set flag for geometrical corrections
+    void setImageTransferFlag(unsigned short flag);
+
+    //! Get flag for geometrical corrections
+    unsigned short getImageTransferFlag();
+
+    //! Set flag for geometrical corrections
+    void setImageFileFormat(unsigned short format);
+
+    //! Get flag for geometrical corrections
+    unsigned short getImageFileFormat();
+    
+    //!< Set overflow time
+    void setOverflowTime(unsigned int value);
+    
+    //!< Get overflow time
+    unsigned int getOverflowTime();
+    
+    //!< Set the number of images per stack;
+    void setStackImages(unsigned int value);
+    
+    //!< Get the number of images per stack;
+    unsigned int getStackImages();
 
     //! Perform a Calibration over the noise
-    int calibrationOTN(unsigned short OTNCalibration);
+    int calibrationOTN(unsigned short calibrationConfiguration);
 
-    //! Reset the detector modules
-    int resetModules();
+    //! Perform a Calibration over the noise with PULSE
+    int calibrationOTNPulse(unsigned short calibrationConfiguration);
+
+    //! Perform a Calibration over the noise
+    int calibrationBEAM(unsigned int time, unsigned int ITHLmax, unsigned short calibrationConfiguration);
+    
+    //! Load a Calibration file from disk
+    int loadCalibrationFromFile(char *fpath);
+
+    //! Save calibration to a file
+    int saveCalibrationToFile(char *fpath);
+
+    //! Cancel current operation
+    void abortCurrentProcess();
+
+    //! Increas burst index
+    int increaseBurstNumber();
+    
+    //! Decrease burst index
+    int decreaseBurstNumber();
+
+    //! Get the burst index
+    int getBurstNumber();
+
+    //! Reset the burst index
+    int resetBurstNumber();
 
     //! Indicate to Server to liberate thread
     void exit();
+    
+    //! Return the burst number used as Server Connection ID
+    int getConnectionID();
+    
+    //!< Creates a white image for flat field and dead pixel corrections
+    int createWhiteImage(char* fileName);
+    
+    //!< Deletes an existing white image.
+	int deleteWhiteImage(char* fileName);
+	
+	//!< Retreives a list of existing white images in server
+	int setWhiteImage(char* fileName);
+	
+	//!< Get a list of White images stored in the server
+	void getWhiteImagesInDir();
+	
+	//!< Read detector temperature
+	void readDetectorTemperature();
+	
+	//!< Set debug mode in server
+	int setDebugMode(unsigned short flag);
+	
+	//!< Show processing and transmission time in server
+	int showTimers(unsigned short flag);
 
 private:
 
-    // Xpad specific
 
-    /*     TYPE OF SYTEM     */
-#define XPAD_S10                    0
-#define XPAD_C10                    1
-#define XPAD_A10                    2
-#define XPAD_S70                    3
-#define XPAD_S70C                   4
-#define XPAD_S140                   5
-#define XPAD_S340                   6
-#define XPAD_S540                   7
-#define XPAD_S540V                  8
-#define XPAD_S1400                  9
-
-   /*     GLOBAL REGISTERS     */
+    /*     GLOBAL REGISTERS     */
 #define AMPTP                       31
 #define IMFP                        59
 #define IOTA                        60
@@ -213,6 +330,7 @@ private:
     enum IMG_TYPE  {B2,B4};
 
     XpadClient              *m_xpad;
+    XpadClient              *m_xpad_alt;
 
     //---------------------------------
     //- LIMA stuff
@@ -222,7 +340,14 @@ private:
     std::string             m_sysName;
     int                     m_nb_frames;
     int                     m_acq_frame_nb;
-
+    
+    int					    m_process_id;
+    unsigned short			m_calibration_configuration;
+	unsigned int			m_time;
+	unsigned int			m_ITHL_max;
+	std::string				m_file_path;
+	unsigned short			m_flat_value;
+	
     mutable Cond            m_cond;
     bool                    m_quit;
     bool                    m_wait_flag;
@@ -233,18 +358,29 @@ private:
 
     //---------------------------------
     //- XPAD stuff
-    unsigned short	        m_modules_mask;
+    unsigned int	    	m_module_mask;
     unsigned short          m_chip_mask;
-    unsigned short          m_xpad_model;
-    unsigned short          m_xpad_format;
+    std::string             m_xpad_model;
+    std::string             m_xpad_type;
+    unsigned short          m_image_format;
+
+    unsigned short          m_geometrical_correction_flag;
+    unsigned short          m_flat_field_correction_flag;
+    unsigned short          m_acquisition_mode;
+    unsigned short          m_image_transfer_flag;
+    unsigned short          m_image_file_format;
+
     Size                    m_image_size;
-    IMG_TYPE                m_pixel_depth;    
+    IMG_TYPE                m_pixel_depth;
     unsigned int            m_xpad_trigger_mode;
+    unsigned int            m_xpad_output_signal_mode;
     unsigned int            m_exp_time_usec;
-    int				        m_module_number;
+    unsigned int            m_lat_time_usec;
+    unsigned int            m_overflow_time;
+    int                     m_module_number;
     int                     m_chip_number;
-
-
+    int                     m_burstNumber;
+    unsigned int			m_stack_images;
 
 
     // Buffer control object
