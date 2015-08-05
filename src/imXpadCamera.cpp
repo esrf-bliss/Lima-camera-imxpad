@@ -1065,6 +1065,10 @@ int Camera::digitalTest(unsigned short mode){
     }
 
     cmd.str(string());
+    cmd << "SetGeometricalCorrectionFlag " << "false";
+    m_xpad->sendWait(cmd.str(), ret);
+
+    cmd.str(string());
     cmd << "DigitalTest " << mode_name.c_str();
     m_xpad->sendNoWait(cmd.str());
 
@@ -1077,7 +1081,7 @@ int Camera::digitalTest(unsigned short mode){
     int32_t val;
     //Saving Digital Test image to disk
     mkdir("./Images",S_IRWXU |  S_IRWXG |  S_IRWXO);
-    ofstream file("./Images/DigitalTest.bin", ios::out|ios::binary);
+    ofstream file("./DigitalTest.bin", ios::out|ios::binary);
     if (file.is_open()){
         for (int i=0;i<rows;i++) {
             for (int j=0;j<columns;j++){
