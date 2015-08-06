@@ -28,6 +28,7 @@
 #define XPADINTERFACE_H_
 
 #include "lima/HwInterface.h"
+#include <sys/time.h>
 
 namespace lima {
 namespace imXpad {
@@ -49,7 +50,7 @@ public:
 	virtual ~DetInfoCtrlObj();
 
 	virtual void getMaxImageSize(Size& max_image_size);
-	virtual void getDetectorImageSize(Size& det_image_size);
+    virtual void getDetectorImageSize(Size& det_image_size);
 
 	virtual void getDefImageType(ImageType& def_image_type);
 	virtual void getCurrImageType(ImageType& curr_image_type);

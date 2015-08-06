@@ -47,16 +47,16 @@ CXXFLAGS += -DWITH_SPS_IMAGE -I../../third-party/libconfig/lib
 LDLIBS += -L../../../third-party/sps/lib/.libs -lconfig
 endif
 
-test-progs = imxpadtest
+test-progs = imXpadTest
 
 all: 	$(test-progs)
 
-imxpadtest:		imXpadTest.o ../src/imXpad.o
+imXpadTest:		imXpadTest.o ../src/imXpad.o
 	$(CXX) $(LDFLAGS) -o $@ $+ $(LDLIBS)
 
 
 clean:
-	rm -f *.o *.P imxpadtest
+	rm -f *.o *.P imXpadTest
 
 %.o : %.cpp
 	$(COMPILE.cpp) -MD $(CXXFLAGS) -o $@ $<
