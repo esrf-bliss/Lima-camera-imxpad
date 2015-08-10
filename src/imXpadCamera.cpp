@@ -141,7 +141,7 @@ int Camera::init() {
 
     cmd.str(string());
     cmd << "Init";
-    m_xpad->sendWait(cmd.str(), ret);  
+    m_xpad->sendWait(cmd.str(), ret);
 
     if(ret == 1 )
         throw LIMA_HW_EXC(Error, "Detector BUSY!");
@@ -196,9 +196,6 @@ int Camera::prepareAcq() {
 
     m_image_file_format = 1;
 
-    while (m_thread_running)
-        m_cond.wait();
-
     cmd1 << "SetExposureParameters " << m_nb_frames << " " << m_exp_time_usec << " "
          << m_lat_time_usec << " " << m_overflow_time << " " << m_xpad_trigger_mode << " " << m_xpad_output_signal_mode << " "
          << m_geometrical_correction_flag << " " << m_flat_field_correction_flag << " "
@@ -220,7 +217,7 @@ int Camera::prepareAcq() {
         }
     }
     //else
-        //throw LIMA_HW_EXC(Error, "SetExposure FAILED!");
+    //throw LIMA_HW_EXC(Error, "SetExposure FAILED!");
 
     DEB_TRACE() << "********** Outside of Camera::prepareAcq ***********";
 
@@ -310,26 +307,29 @@ void Camera::getStatus(XpadStatus& status) {
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "********** Inside of Camera::getStatus ***********";
 
-    stringstream cmd;
-    string str;
-    unsigned short pos;
-    cmd << "GetDetectorStatus";
+    if (m_thread_running == false || (m_thread_running && m_process_id > 0) || (m_acq_frame_nb == m_nb_frames)){
 
-    m_xpad_alt->sendWait(cmd.str(), str);
-    pos = str.find(".");
-    string state = str.substr (0, pos);
-    if (state.compare("Idle") == 0) {
-        status.state = XpadStatus::Idle;
-    }else if (state.compare("Acquiring") == 0) {
-        status.state = XpadStatus::Acquiring;
-    }else if (state.compare("Loading/Saving_calibration") == 0) {
-        status.state = XpadStatus::CalibrationManipulation;
-    }else if (state.compare("Calibrating") == 0) {
-        status.state = XpadStatus::Calibrating;
-    } else if (state.compare("Digital_Test") == 0) {
-        status.state = XpadStatus::DigitalTest;
-    } else if (state.compare("Resetting") == 0) {
-        status.state = XpadStatus::Resetting;
+        stringstream cmd;
+        string str;
+        unsigned short pos;
+        cmd << "GetDetectorStatus";
+
+        m_xpad_alt->sendWait(cmd.str(), str);
+        pos = str.find(".");
+        string state = str.substr (0, pos);
+        if (state.compare("Idle") == 0) {
+            status.state = XpadStatus::Idle;
+        }else if (state.compare("Acquiring") == 0) {
+            status.state = XpadStatus::Acquiring;
+        }else if (state.compare("Loading/Saving_calibration") == 0) {
+            status.state = XpadStatus::CalibrationManipulation;
+        }else if (state.compare("Calibrating") == 0) {
+            status.state = XpadStatus::Calibrating;
+        } else if (state.compare("Digital_Test") == 0) {
+            status.state = XpadStatus::DigitalTest;
+        } else if (state.compare("Resetting") == 0) {
+            status.state = XpadStatus::Resetting;
+        }
     }
 
     DEB_TRACE() << "XpadStatus.state is [" << status.state << "]";
@@ -370,9 +370,7 @@ void Camera::AcqThread::threadFunction() {
 
             DEB_TRACE() << "Starting to acquire images...";
 
-            XpadStatus status;
-            m_cam.getStatus(status);
-            if (status.state == status.Idle && m_cam.m_quit == false){
+            if (m_cam.m_quit == false){
                 m_cam.sendExposeCommand();
 
                 bool continueFlag = true;
@@ -398,10 +396,6 @@ void Camera::AcqThread::threadFunction() {
                         }
                         else{
                             continueFlag = false;
-                            aLock.lock();
-                            m_cam.m_wait_flag = true;
-                            m_cam.m_cond.broadcast();
-                            aLock.unlock();
                             m_cam.getDataExposeReturn();
                             DEB_TRACE() << "ABORT detected";
                         }
@@ -433,10 +427,6 @@ void Camera::AcqThread::threadFunction() {
                         while (access( fileName.str().c_str(), F_OK ) == -1){
                             if (m_cam.m_quit){
                                 DEB_TRACE() << "ABORT detected";
-                                aLock.lock();
-                                m_cam.m_wait_flag = true;
-                                aLock.unlock();
-                                m_cam.m_cond.broadcast();
                                 break;
                             }
                         }
@@ -493,7 +483,7 @@ void Camera::AcqThread::threadFunction() {
                 throw LIMA_HW_EXC(Error, "Calibration Over The Noise FAILED!");
 
             break;
-        }  
+        }
         case 2:{ //CalibrationOTNPulse
             int ret;
             stringstream cmd;
@@ -655,10 +645,9 @@ void Camera::AcqThread::threadFunction() {
         }
         }
         aLock.lock();
-        m_cam.m_wait_flag = true;
         m_cam.m_quit = false;
+        m_cam.m_wait_flag = true;
         m_cam.m_cond.broadcast();
-
     }
 
     DEB_TRACE() << "Acquisition thread finished";
@@ -1608,7 +1597,7 @@ int Camera::calibrationOTN(unsigned short calibrationConfiguration){
     m_cond.broadcast();
 
     while (!m_thread_running)
-        m_cond.wait();   
+        m_cond.wait();
 
     DEB_TRACE() << "********** Outside of Camera::calibrationOTN ***********";
 
