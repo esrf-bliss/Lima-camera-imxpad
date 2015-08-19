@@ -25,7 +25,7 @@ SRCS = imXpadTest.cpp
 
 
 LDFLAGS = -pthread -L../../../build  -L../../../third-party/Processlib/build 
-LDLIBS = -llimaimxpad -llimacore  -lprocesslib 
+LDLIBS = -llimaimxpad -llimacore
 
 CXXFLAGS = -I../include \
 	       -I../../../hardware/include \
@@ -39,12 +39,10 @@ CXXFLAGS = -I../include \
 
 ifneq ($(COMPILE_CONFIG),0)
 CXXFLAGS += -DWITH_CONFIG -I../../third-party/libconfig/lib
-LDLIBS += -L../../../third-party/libconfig/lib/.libs -lconfig
 endif
 
 ifneq ($(COMPILE_SPS),0)
 CXXFLAGS += -DWITH_SPS_IMAGE -I../../third-party/libconfig/lib
-LDLIBS += -L../../../third-party/sps/lib/.libs -lconfig
 endif
 
 test-progs = imXpadTest
