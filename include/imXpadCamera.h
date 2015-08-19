@@ -52,7 +52,7 @@ class BufferCtrlObj;
  * \class Camera
  * \brief object controlling the Xpad camera
  *******************************************************************/
-class Camera {
+class Camera : public  HwMaxImageSizeCallbackGen {
     DEB_CLASS_NAMESPC(DebModCamera, "Camera", "Xpad");
 
 public:

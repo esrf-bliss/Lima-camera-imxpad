@@ -1490,6 +1490,9 @@ void Camera:: setGeometricalCorrectionFlag(unsigned short flag){
         this->getImageSize(size);
 
     m_image_size = size;
+    ImageType pixel_depth;
+    getImageType(pixel_depth);
+    maxImageSizeChanged(m_image_size,pixel_depth);
 }
 
 unsigned short Camera::getGeometricalCorrectionFlag(){
