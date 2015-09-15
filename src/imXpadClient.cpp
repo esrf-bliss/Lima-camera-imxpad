@@ -283,7 +283,7 @@ int XpadClient::getDataExpose(void *bptr, unsigned short xpadFormat) {
 
     if(data_size > 0 && data_chain[0] != '*'){
 
-        unsigned char data[data_size];
+        unsigned char *data = new unsigned char[data_size];
         data_buff = new int32_t[line_final_image*column_final_image ];
 
         ssize_t bytes;
@@ -316,7 +316,7 @@ int XpadClient::getDataExpose(void *bptr, unsigned short xpadFormat) {
         }
 
         delete[] data_buff;
-
+	delete[] data;
         return 0;
 
     }
