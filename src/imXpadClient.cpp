@@ -257,21 +257,21 @@ void XpadClient::sendExposeCommand(){
 int XpadClient::getDataExpose(void *bptr, unsigned short xpadFormat) {
     DEB_MEMBER_FUNCT();
 
-    uint16_t *buffer_short;
-    uint32_t *buffer_int;
+    int16_t *buffer_short;
+    int32_t *buffer_int;
     int32_t *data_buff;
 
     if (xpadFormat==0)
-        buffer_short = (uint16_t *)bptr;
+        buffer_short = (int16_t *)bptr;
     else
-        buffer_int = (uint32_t *)bptr;
+        buffer_int = (int32_t *)bptr;
 
     uint32_t data_size = 0;
     uint32_t line_final_image = 0;
     uint32_t column_final_image = 0;
     uint32_t bytes_received = 0;
 
-    unsigned char data_chain[3*sizeof(uint32_t)];
+    unsigned char data_chain[3*sizeof(int32_t)];
 
     while (read(m_skt, data_chain, 3*sizeof(uint32_t)) < 0);
 
@@ -305,11 +305,11 @@ int XpadClient::getDataExpose(void *bptr, unsigned short xpadFormat) {
 
             if (xpadFormat==0){
                 memcpy (&data_buff[i], &data[count], sizeof(int32_t) );
-                buffer_short[i] = (uint16_t)(data_buff[i]);
+                buffer_short[i] = (int16_t)(data_buff[i]);
             }
             else{
                 memcpy (&data_buff[i], &data[count], sizeof(int32_t) );
-                buffer_int[i] = (uint32_t)(data_buff[i]);
+                buffer_int[i] = (int32_t)(data_buff[i]);
             }
             count += sizeof(int32_t);
             i++;

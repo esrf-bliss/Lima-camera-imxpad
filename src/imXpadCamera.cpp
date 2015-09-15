@@ -704,11 +704,11 @@ void Camera::getImageType(ImageType& pixel_depth) {
     switch( m_image_format )
     {
     case 0:
-        pixel_depth = Bpp16;
+        pixel_depth = Bpp16S;
         break;
 
     case 1:
-        pixel_depth = Bpp32;
+        pixel_depth = Bpp32S;
         break;
     }
 }
