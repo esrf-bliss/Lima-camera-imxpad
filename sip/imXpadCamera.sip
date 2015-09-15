@@ -30,7 +30,7 @@ namespace imXpad {
  * \class Camera
  * \brief object controlling the imXpad camera
  *******************************************************************/
-class Camera {
+class Camera: HwMaxImageSizeCallbackGen {
 %TypeHeaderCode
 #include <imXpadCamera.h>
 %End
