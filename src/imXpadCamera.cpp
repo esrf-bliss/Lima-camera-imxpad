@@ -1467,7 +1467,7 @@ void Camera::getOutputSignalMode(unsigned short& mode) {
 
 void Camera:: setGeometricalCorrectionFlag(unsigned short flag){
     DEB_MEMBER_FUNCT();
-    DEB_TRACE() << "Camera::setGeometricalCorretctionsFlag - " << DEB_VAR1(flag);
+    DEB_TRACE() << "Camera::setGeometricalCorrectionFlag - " << DEB_VAR1(flag);
     DEB_PARAM() << DEB_VAR1(flag);
 
     m_geometrical_correction_flag = flag;
@@ -1503,7 +1503,7 @@ unsigned short Camera::getGeometricalCorrectionFlag(){
 
 void Camera::setFlatFieldCorrectionFlag(unsigned short flag){
     DEB_MEMBER_FUNCT();
-    DEB_TRACE() << "Camera::setFlatFieldFlag - " << DEB_VAR1(flag);
+    DEB_TRACE() << "Camera::setFlatFieldCorrectionFlag - " << DEB_VAR1(flag);
     DEB_PARAM() << DEB_VAR1(flag);
 
     m_flat_field_correction_flag = flag;
