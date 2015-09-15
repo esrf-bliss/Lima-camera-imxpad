@@ -220,6 +220,24 @@ public:
     //! Set flag for flat field corrections
     void setFlatFieldCorrectionFlag(unsigned short flag);
 
+    //! Set flag for dead & noisy pixel corrections
+    void setDeadNoisyPixelCorrectionFlag(unsigned short flag);
+
+    //! Get flag for dead & noisy pixel corrections
+    unsigned short getDeadNoisyPixelCorrectionFlag();
+    
+    //! Set flag for noisy pixel corrections
+    void setNoisyPixelCorrectionFlag(unsigned short flag);
+
+    //! Get flag for noisy pixel corrections
+    unsigned short getNoisyPixelCorrectionFlag();
+
+    //! Set flag for dead pixel corrections
+    void setDeadPixelCorrectionFlag(unsigned short flag);
+
+    //! Get flag for dead pixel corrections
+    unsigned short getDeadPixelCorrectionFlag();
+
     //! Get flag for flat field corrections
     unsigned short getFlatFieldCorrectionFlag();
 
@@ -366,6 +384,8 @@ private:
 
     unsigned short          m_geometrical_correction_flag;
     unsigned short          m_flat_field_correction_flag;
+    unsigned short          m_noisy_pixel_correction_flag;
+    unsigned short          m_dead_pixel_correction_flag;
     unsigned short          m_acquisition_mode;
     unsigned short          m_image_transfer_flag;
     unsigned short          m_image_file_format;

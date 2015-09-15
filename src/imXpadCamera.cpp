@@ -519,7 +519,7 @@ void Camera::AcqThread::threadFunction() {
 
         }
         case 4:{ //loadCalibrationFromFile
-            int ret1, ret2;
+	  int ret1;
 
             size_t pos = m_cam.m_file_path.find(".cf");
 
@@ -533,13 +533,13 @@ void Camera::AcqThread::threadFunction() {
 
             if (ret1 == 0){
                 m_cam.m_file_path.replace(pos, 4, ".cfl");
-                ret2 = m_cam.loadConfigLFromFile((char *) m_cam.m_file_path.c_str());
+                m_cam.loadConfigLFromFile((char *) m_cam.m_file_path.c_str());
             }
 
             break;
         }
         case 5:{ //saveCalibrationToFile
-            int ret1, ret2;
+	  int ret1;
 
             size_t pos = m_cam.m_file_path.find(".cf");
 
@@ -553,7 +553,7 @@ void Camera::AcqThread::threadFunction() {
 
             if (ret1 == 0){
                 m_cam.m_file_path.replace(pos, 4, ".cfl");
-                ret2 = m_cam.saveConfigLToFile((char *) m_cam.m_file_path.c_str());
+                m_cam.saveConfigLToFile((char *) m_cam.m_file_path.c_str());
             }
 
             break;
@@ -1166,7 +1166,7 @@ int Camera::saveConfigGToFile(char *fpath){
             stringstream stream(retString.c_str());
             int length = retString.length();
 
-            int mdMask = 1;
+            unsigned mdMask = 1;
             while (mdMask<=m_module_mask){
                 if (length > 1){
                     //Register values are being stored in the file
@@ -1513,6 +1513,106 @@ unsigned short Camera::getFlatFieldCorrectionFlag(){
     DEB_MEMBER_FUNCT();
 
     return m_flat_field_correction_flag;
+}
+
+void Camera:: setDeadNoisyPixelCorrectionFlag(unsigned short flag){
+    DEB_MEMBER_FUNCT();
+    DEB_TRACE() << "Camera::setDeadNoisyPixelCorretctionFlag - " << DEB_VAR1(flag);
+    DEB_PARAM() << DEB_VAR1(flag);
+    
+    this->setNoisyPixelCorrectionFlag(flag);
+    this->setDeadPixelCorrectionFlag(flag);
+}
+
+unsigned short Camera::getDeadNoisyPixelCorrectionFlag(){
+    DEB_MEMBER_FUNCT();
+    
+    unsigned short ret1, ret2;
+    
+    ret1 = this->getNoisyPixelCorrectionFlag();
+    ret2 = this->getDeadPixelCorrectionFlag();
+    
+    return ret1 & ret2;
+}
+
+void Camera:: setNoisyPixelCorrectionFlag(unsigned short flag){
+    DEB_MEMBER_FUNCT();
+    DEB_TRACE() << "Camera::setNoisyPixelCorretctionFlag - " << DEB_VAR1(flag);
+    DEB_PARAM() << DEB_VAR1(flag);
+
+    m_noisy_pixel_correction_flag = flag;
+    
+    int ret;
+    string message, flag_state;
+    stringstream cmd;
+    Size size;
+    
+    switch (flag){
+    case 0: flag_state = "false"; break;
+    default: flag_state = "true";
+    }
+
+    cmd.str(string());
+    cmd << "SetNoisyPixelCorrectionFlag " << flag_state.c_str();
+    m_xpad->sendWait(cmd.str(), ret);
+}
+unsigned short Camera::getNoisyPixelCorrectionFlag(){
+    DEB_MEMBER_FUNCT();
+    
+    string ret;
+    string message;
+    stringstream cmd;
+  
+    cmd.str(string());
+    cmd << "GetNoisyPixelCorrectionFlag ";
+    m_xpad->sendWait(cmd.str(), ret);
+    
+    if (ret.compare("false"))
+              m_noisy_pixel_correction_flag = 1;
+    else
+              m_noisy_pixel_correction_flag = 0;
+
+    return m_noisy_pixel_correction_flag;
+}
+
+void Camera::setDeadPixelCorrectionFlag(unsigned short flag){
+    DEB_MEMBER_FUNCT();
+    DEB_TRACE() << "Camera::setDeadPixelCorrectionFlag - " << DEB_VAR1(flag);
+    DEB_PARAM() << DEB_VAR1(flag);
+
+    m_flat_field_correction_flag = flag;
+    
+    int ret;
+    string message, flag_state;
+    stringstream cmd;
+    
+    switch (flag){
+    case 0: flag_state = "false"; break;
+    default: flag_state = "true";
+    }
+
+    cmd.str(string());
+    cmd << "SetDeadPixelCorrectionFlag " << flag_state.c_str();
+    m_xpad->sendWait(cmd.str(), ret);
+}
+
+unsigned short Camera::getDeadPixelCorrectionFlag(){
+    DEB_MEMBER_FUNCT();
+    
+    string ret;
+    string message;
+    stringstream cmd;
+
+    cmd.str(string());
+    cmd << "GetDeadPixelCorrectionFlag ";
+    m_xpad->sendWait(cmd.str(), ret);
+    
+    if (ret.compare("false"))
+              m_dead_pixel_correction_flag = 1;
+    else
+              m_dead_pixel_correction_flag = 0;
+
+    return m_dead_pixel_correction_flag;
 }
 
 void Camera::setAcquisitionMode(unsigned int mode){
