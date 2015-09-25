@@ -377,7 +377,7 @@ void Camera::AcqThread::threadFunction() {
                 int ret;
 
                 if (m_cam.m_image_transfer_flag == 1){
-                    while (continueFlag && (!m_cam.m_nb_frames || m_cam.m_acq_frame_nb < m_cam.m_nb_frames) && m_cam.m_quit == false) {
+                    while (continueFlag && (!m_cam.m_nb_frames || m_cam.m_acq_frame_nb < m_cam.m_nb_frames)) {
 
                         DEB_TRACE() << m_cam.m_acq_frame_nb;
                         void *bptr = buffer_mgr.getFrameBufferPtr(m_cam.m_acq_frame_nb);
@@ -395,11 +395,11 @@ void Camera::AcqThread::threadFunction() {
                             DEB_TRACE() << "acquired " << m_cam.m_acq_frame_nb << " frames, required " << m_cam.m_nb_frames << " frames";
                         }
                         else{
-                            continueFlag = false;
-                            m_cam.getDataExposeReturn();
+                            continueFlag = false;                           
                             DEB_TRACE() << "ABORT detected";
                         }
                     }
+                    m_cam.getDataExposeReturn();
                 }
                 else{
 
