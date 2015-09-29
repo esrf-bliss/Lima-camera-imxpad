@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 ############################################################################
+include ../../../config.inc
 
 xpad-objs := imXpadCamera.o imXpadClient.o imXpadDetInfoCtrlObj.o imXpadInterface.o imXpadSyncCtrlObj.o
 
@@ -33,6 +34,10 @@ INCLUDES = -I../include \
 
 CXXFLAGS += $(INCLUDES) -fPIC -Wall -pthread
 
+ifneq ($(COMPILE_CONFIG),0)
+xpad-objs += imXpadConfig.o
+CXXFLAGS += -DWITH_CONFIG -I../../third-party/libconfig/lib
+endif
 
 all: imXpad.o
 
