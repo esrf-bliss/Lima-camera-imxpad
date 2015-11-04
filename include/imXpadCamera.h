@@ -136,6 +136,7 @@ public:
     void getDetectorModel(std::string& model);
     void getImageSize(Size& size);
     void getPixelSize(double& size_x, double& size_y);
+    int setModuleMask(unsigned int moduleMask);
     void getModuleMask();
     void getModuleNumber();
     void getChipMask();
