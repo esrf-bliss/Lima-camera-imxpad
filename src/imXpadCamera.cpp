@@ -111,7 +111,7 @@ Camera::Camera(string hostname, int port) : m_hostname(hostname), m_port(port){
     this->getChipMask();
     this->getModuleNumber();
     this->getChipNumber();
-    this->setImageType(Bpp32);
+    this->setImageType(Bpp32S);
     this->setNbFrames(1);
     this->setAcquisitionMode(0); //standard
     this->setExpTime(1);
@@ -719,12 +719,12 @@ void Camera::setImageType(ImageType pixel_depth) {
     //m_image_type = type;
     switch( pixel_depth )
     {
-    case Bpp16:
+    case Bpp16S:
         m_pixel_depth = B2;
         m_image_format = 0;
         break;
 
-    case Bpp32:
+    case Bpp32S:
         m_pixel_depth = B4;
         m_image_format = 1;
         break;
@@ -950,6 +950,30 @@ int Camera::setUSBDevice(unsigned short device){
     return ret;
 
 }*/
+
+int Camera::setModuleMask(unsigned int moduleMask){
+    DEB_MEMBER_FUNCT();
+    DEB_TRACE() << "********** Inside of Camera::setModuleMask ***********";
+
+    int ret;
+    stringstream cmd;
+    
+    m_module_mask = moduleMask;
+
+    cmd.str(string());
+    cmd << "SetModuleMask " << moduleMask;
+    m_xpad->sendWait(cmd.str(), ret);
+
+    if(!ret)
+        DEB_TRACE() << "Setting module mask to " << moduleMask;
+    else
+        throw LIMA_HW_EXC(Error, "Setting module mask FAILED!");
+
+    DEB_TRACE() << "********** Outside of Camera::setModuleMask ***********";
+
+    return ret;
+
+}
 
 void Camera::getModuleMask(){
     DEB_MEMBER_FUNCT();
