@@ -26,6 +26,7 @@
 
 #include "imXpadInterface.h"
 #include "imXpadCamera.h"
+#include "imXpadConfig.h"
 
 using namespace lima;
 using namespace lima::imXpad;
@@ -44,10 +45,18 @@ Interface::Interface(Camera& cam) :
 
     HwSyncCtrlObj *sync = &m_sync;
     m_cap_list.push_back(sync);
+
+#ifdef WITH_CONFIG
+    m_config = new Config(m_cam);
+    m_cap_list.push_back(m_config);
+#endif
 }
 
 Interface::~Interface() {
     DEB_DESTRUCTOR();
+#ifdef WITH_CONFIG
+    delete m_config;
+#endif
 }
 
 void Interface::getCapList(CapList &cap_list) const {

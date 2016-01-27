@@ -35,7 +35,7 @@ namespace imXpad {
 
 class Interface;
 class Camera;
-
+class Config;
 /*******************************************************************
  * \class DetInfoCtrlObj
  * \brief Control object providing Xpad detector info interface
@@ -160,6 +160,7 @@ private:
 	DetInfoCtrlObj m_det_info;
     HwBufferCtrlObj*  m_bufferCtrlObj;
     SyncCtrlObj m_sync;
+    Config* m_config;
 };
 
 } // namespace imXpad
