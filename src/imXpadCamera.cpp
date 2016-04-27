@@ -252,7 +252,7 @@ void Camera::waitAcqEnd(){
     while (m_thread_running)
         m_cond.wait();
 
-    usleep(10000);
+    usleep(1000000);
 
     DEB_TRACE() << "********** Outside of Camera::waitAcqEnd ***********";
 }
