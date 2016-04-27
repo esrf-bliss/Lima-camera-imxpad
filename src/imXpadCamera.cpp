@@ -189,7 +189,7 @@ int Camera::prepareAcq() {
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "********** Inside of Camera::prepareAcq ***********";
 
-    this->waitAcqEnd();
+    //this->waitAcqEnd();
 
     int value;
     stringstream cmd1;
@@ -228,7 +228,7 @@ void Camera::startAcq() {
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "********** Inside of Camera::startAcq ***********";
 
-    this->waitAcqEnd();
+    //this->waitAcqEnd();
 
     m_acq_frame_nb = 0;
     StdBufferCbMgr& buffer_mgr = m_bufferCtrlObj.getBuffer();
