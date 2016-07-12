@@ -261,7 +261,7 @@ void Camera::stopAcq() {
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "********** Inside of Camera::stopAcq ***********";
 
-    this->waitAcqEnd();
+    //this->waitAcqEnd();
 
     DEB_TRACE() << "********** Outside of Camera::stopAcq ***********";
 }
@@ -2023,6 +2023,22 @@ int Camera::showTimers(unsigned short flag){
 
     cmd.str(string());
     cmd << "ShowTimers " << flag_state.c_str();
+    m_xpad->sendWait(cmd.str(), ret);
+
+    DEB_TRACE() << "********** Outside of Camera::showTimers ***********";
+
+    return ret;
+}
+
+int Camera::createDeadNoisyMask(){
+    DEB_MEMBER_FUNCT();
+    DEB_TRACE() << "********** Inside of Camera::showTimers ***********";
+
+    int ret;
+    stringstream cmd;
+
+    cmd.str(string());
+    cmd << "CreateDeadNoisyMask ";
     m_xpad->sendWait(cmd.str(), ret);
 
     DEB_TRACE() << "********** Outside of Camera::showTimers ***********";

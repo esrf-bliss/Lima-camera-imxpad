@@ -313,6 +313,9 @@ public:
 	
 	//!< Show processing and transmission time in server
 	int showTimers(unsigned short flag);
+
+	//!< Create the dead noisy pixel mask
+	int createDeadNoisyMask();
 };
 
 }; // namespace imXpad
