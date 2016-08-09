@@ -1,9 +1,10 @@
 .. _camera-imxpad:
 
-imXPAD camera plugin
---------------------
+imXPAD
+------
 
 .. image:: imxpad.jpg
+   :scale: 10 %
 
 Introduction
 ````````````
