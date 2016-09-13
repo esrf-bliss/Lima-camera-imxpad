@@ -91,10 +91,10 @@ Camera::Camera(string hostname, int port) : m_hostname(hostname), m_port(port){
 
     m_acq_thread = new AcqThread(*this);
     m_acq_thread->start();
-    
+
     m_xpad = new XpadClient();
     m_xpad_alt = new XpadClient();
-    
+
     if (m_xpad->connectToServer(m_hostname, m_port) < 0) {
         THROW_HW_ERROR(Error) << "[ " << m_xpad->getErrorMessage() << " ]";
     }
@@ -103,7 +103,7 @@ Camera::Camera(string hostname, int port) : m_hostname(hostname), m_port(port){
     }
 
     string xpad_type, xpad_model;
-    
+
     this->init();
     this->getDetectorType(xpad_type);
     this->getDetectorModel(xpad_model);
@@ -228,7 +228,7 @@ void Camera::startAcq() {
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "********** Inside of Camera::startAcq ***********";
 
-    //this->waitAcqEnd();
+    this->waitAcqEnd();
 
     m_acq_frame_nb = 0;
     StdBufferCbMgr& buffer_mgr = m_bufferCtrlObj.getBuffer();
@@ -238,7 +238,7 @@ void Camera::startAcq() {
     m_quit = false;
     m_process_id = 0;
     m_cond.broadcast();
-    
+
     while (!m_thread_running)
         m_cond.wait();
 
@@ -395,7 +395,7 @@ void Camera::AcqThread::threadFunction() {
                             DEB_TRACE() << "acquired " << m_cam.m_acq_frame_nb << " frames, required " << m_cam.m_nb_frames << " frames";
                         }
                         else{
-                            continueFlag = false;                           
+                            continueFlag = false;
                             DEB_TRACE() << "ABORT detected";
                         }
                     }
@@ -672,7 +672,7 @@ Camera::AcqThread::~AcqThread() {
 }
 
 void Camera::getImageSize(Size& size) {
-    
+
     DEB_MEMBER_FUNCT();
 
     string message, ret;
@@ -681,7 +681,7 @@ void Camera::getImageSize(Size& size) {
     cmd.str(string());
     cmd << "GetImageSize";
     m_xpad->sendWait(cmd.str(), ret);
-    
+
     int pos = ret.find("x");
 
     int row = atoi(ret.substr(0, pos).c_str());
@@ -867,7 +867,7 @@ void Camera::getLatTime(double& lat_time) {
 void Camera::setNbFrames(int nb_frames) {
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "Camera::setNbFrames - " << DEB_VAR1(nb_frames);
-    
+
     m_nb_frames = nb_frames;
 }
 
@@ -957,7 +957,7 @@ int Camera::setModuleMask(unsigned int moduleMask){
 
     int ret;
     stringstream cmd;
-    
+
     m_module_mask = moduleMask;
 
     cmd.str(string());
@@ -1495,12 +1495,12 @@ void Camera:: setGeometricalCorrectionFlag(unsigned short flag){
     DEB_PARAM() << DEB_VAR1(flag);
 
     m_geometrical_correction_flag = flag;
-    
+
     int ret;
     string message, flag_state;
     stringstream cmd;
     Size size;
-    
+
     switch (flag){
     case 0: flag_state = "false"; break;
     default: flag_state = "true";
@@ -1509,7 +1509,7 @@ void Camera:: setGeometricalCorrectionFlag(unsigned short flag){
     cmd.str(string());
     cmd << "SetGeometricalCorrectionFlag " << flag_state.c_str();
     m_xpad->sendWait(cmd.str(), ret);
-    
+
     if ( ret == 0)
         this->getImageSize(size);
 
@@ -1543,19 +1543,19 @@ void Camera:: setDeadNoisyPixelCorrectionFlag(unsigned short flag){
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "Camera::setDeadNoisyPixelCorretctionFlag - " << DEB_VAR1(flag);
     DEB_PARAM() << DEB_VAR1(flag);
-    
+
     this->setNoisyPixelCorrectionFlag(flag);
     this->setDeadPixelCorrectionFlag(flag);
 }
 
 unsigned short Camera::getDeadNoisyPixelCorrectionFlag(){
     DEB_MEMBER_FUNCT();
-    
+
     unsigned short ret1, ret2;
-    
+
     ret1 = this->getNoisyPixelCorrectionFlag();
     ret2 = this->getDeadPixelCorrectionFlag();
-    
+
     return ret1 & ret2;
 }
 
@@ -1565,12 +1565,12 @@ void Camera:: setNoisyPixelCorrectionFlag(unsigned short flag){
     DEB_PARAM() << DEB_VAR1(flag);
 
     m_noisy_pixel_correction_flag = flag;
-    
+
     int ret;
     string message, flag_state;
     stringstream cmd;
     Size size;
-    
+
     switch (flag){
     case 0: flag_state = "false"; break;
     default: flag_state = "true";
@@ -1582,15 +1582,15 @@ void Camera:: setNoisyPixelCorrectionFlag(unsigned short flag){
 }
 unsigned short Camera::getNoisyPixelCorrectionFlag(){
     DEB_MEMBER_FUNCT();
-    
+
     string ret;
     string message;
     stringstream cmd;
-  
+
     cmd.str(string());
     cmd << "GetNoisyPixelCorrectionFlag ";
     m_xpad->sendWait(cmd.str(), ret);
-    
+
     if (ret.compare("false"))
               m_noisy_pixel_correction_flag = 1;
     else
@@ -1605,11 +1605,11 @@ void Camera::setDeadPixelCorrectionFlag(unsigned short flag){
     DEB_PARAM() << DEB_VAR1(flag);
 
     m_flat_field_correction_flag = flag;
-    
+
     int ret;
     string message, flag_state;
     stringstream cmd;
-    
+
     switch (flag){
     case 0: flag_state = "false"; break;
     default: flag_state = "true";
@@ -1622,7 +1622,7 @@ void Camera::setDeadPixelCorrectionFlag(unsigned short flag){
 
 unsigned short Camera::getDeadPixelCorrectionFlag(){
     DEB_MEMBER_FUNCT();
-    
+
     string ret;
     string message;
     stringstream cmd;
@@ -1630,7 +1630,7 @@ unsigned short Camera::getDeadPixelCorrectionFlag(){
     cmd.str(string());
     cmd << "GetDeadPixelCorrectionFlag ";
     m_xpad->sendWait(cmd.str(), ret);
-    
+
     if (ret.compare("false"))
               m_dead_pixel_correction_flag = 1;
     else
@@ -1979,7 +1979,7 @@ void Camera::getWhiteImagesInDir(){
     cmd.str(string());
     cmd << "GetWhiteImagesInDir";
     m_xpad->sendWait(cmd.str(), message);
-    
+
     DEB_TRACE() << "List of USB devices connected: " << message;
 
     DEB_TRACE() << "********** Outside of Camera::getWhiteImagesInDir ***********";
@@ -1994,7 +1994,7 @@ int Camera::setDebugMode(unsigned short flag){
     int ret;
     string flag_state;
     stringstream cmd;
-    
+
     switch (flag){
     case 0: flag_state = "false"; break;
     default: flag_state = "true";
@@ -2015,7 +2015,7 @@ int Camera::showTimers(unsigned short flag){
     int ret;
     string flag_state;
     stringstream cmd;
-    
+
     switch (flag){
     case 0: flag_state = "false"; break;
     default: flag_state = "true";
@@ -2045,11 +2045,3 @@ int Camera::createDeadNoisyMask(){
 
     return ret;
 }
-
-
-
-
-
-
-
-
