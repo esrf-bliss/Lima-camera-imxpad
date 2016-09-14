@@ -84,22 +84,46 @@ This is a python code example for a simple test:
 
   from Lima import imXpad
   from Lima import Core
+  import time
 
-  cam = imXpad.Camera('10.211.55.2', 3456, 'XPAD_S70')
+  # Setting XPAD camera (IP, port)
+  cam = imXpad.Camera('localhost', 3456)
+
   HWI = imXpad.Interface(cam)
   CT = Core.CtControl(HWI)
   CTa = CT.acquisition()
   CTs = CT.saving()
-  CTs.setDirectory("/home/imxpad/data")
-  CTs.setPrefix("20140515_01_")
-  CTs.setFormat(CTs.EDF)
-  CTs.setSuffix(".edf")
-  CTs.setSavingMode(CTs.AutoFrame)
-  CTa.setAcqExpoTime(1)
-  CTa.setAcqNbFrames(5)
-  cam.init()
 
+  #To specify where images will be stored using EDF format
+  CTs.setDirectory("./Images")
+  CTs.setPrefix("id24_")
+  CTs.setFormat(CTs.RAW)
+  CTs.setSuffix(".bin")
+  CTs.setSavingMode(CTs.AutoFrame)
+  CTs.setOverwritePolicy(CTs.Overwrite)
+
+  #To set acquisition parameters
+  CTa.setAcqExpoTime(0.001) #1 ms exposure time.
+  CTa.setAcqNbFrames(10) # 10 images.
+  CTa.setLatencyTime(0.005) # 5 ms latency time between images.
+
+  #To change acquisition mode
+  cam.setAcquisitionMode(cam.XpadAcquisitionMode.Standard)
+
+  #To set Triggers. Possibilities: Core.IntTrig, Core.ExtGate, Core.ExtTrigMult, Core.ExtTrigSingle. 
+  CTa.setTriggerMode(Core.IntTrig)
+
+  #To set Outputs.
+  cam.setOutputSignalMode(cam.XpadOutputSignal.ExposureBusy)
+
+  #ASYNCHRONOS acquisition
   CT.prepareAcq()
   CT.startAcq()
-  cam.stopAcq()
-  cam.exit()
+
+  #SYNCHRONOUS acquisition
+  CT.prepareAcq()
+  CT.startAcq()
+  cam.waitAcqEnd()
+
+  #To abort current process
+  #CT.stopAcq()
