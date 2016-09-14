@@ -68,7 +68,7 @@ void Interface::reset(ResetLevel reset_level) {
     DEB_MEMBER_FUNCT();
     DEB_PARAM() << DEB_VAR1(reset_level);
 
-    stopAcq();
+    //stopAcq();
     m_cam.reset();
 }
 
@@ -96,7 +96,11 @@ void Interface::startAcq() {
 
 void Interface::stopAcq() {
     DEB_MEMBER_FUNCT();
-    m_cam.abortCurrentProcess();
+    Camera::XpadStatus xpadStatus;  
+    m_cam.getStatus(xpadStatus);  
+    
+    if (xpadStatus.state != Camera::XpadStatus::Idle)    
+	m_cam.abortCurrentProcess();
     m_cam.waitAcqEnd();
 }
 

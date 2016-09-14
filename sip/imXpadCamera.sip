@@ -40,9 +40,9 @@ public:
     public:
         enum XpadState {
             Idle, ///< The detector is not acquiringing data
-            Acquiring, ///< The detector is acquiring data  
+            Acquiring, ///< The detector is acquiring data
             CalibrationManipulation, ///< The detector is loading or saving calibrations
-            Calibrating,          
+            Calibrating,
             DigitalTest, ///< The detector is performing a digital test
             Resetting ///< The detector is resetting.
         };
@@ -113,6 +113,7 @@ public:
     void startAcq();
     void stopAcq();
     void waitAcqEnd();
+    void setWaitAcqEndTime(unsigned int time);
 
     // -- detector info object
     void getImageType(ImageType& type /Out/);
@@ -214,7 +215,7 @@ public:
 
     //! Get flag for dead & noisy pixel corrections
     unsigned short getDeadNoisyPixelCorrectionFlag();
-    
+
     //! Set flag for noisy pixel corrections
     void setNoisyPixelCorrectionFlag(unsigned short flag);
 
@@ -250,10 +251,10 @@ public:
 
     //!< Get overflow time
     unsigned int getOverflowTime();
-    
+
     //!< Set the number of images per stack;
     void setStackImages(unsigned int value);
-    
+
     //!< Get the number of images per stack;
     unsigned int getStackImages();
 
@@ -274,7 +275,7 @@ public:
 
     //! Cancel current operation
     void abortCurrentProcess();
-    
+
     //! Increas burst index
     int increaseBurstNumber();
 
@@ -289,30 +290,33 @@ public:
 
     //! Indicate to Server to liberate thread
     void exit();
-    
+
     //! Return the burst number used as Server Connection ID
     int getConnectionID();
-    
+
     //!< Creates a white image for flat field and dead pixel corrections
     int createWhiteImage(char* fileName);
-    
+
     //!< Deletes an existing white image.
 	int deleteWhiteImage(char* fileName);
-	
+
 	//!< Retreives a list of existing white images in server
 	int setWhiteImage(char* fileName);
-	
+
 	//!< Get a list of White images stored in the server
 	void getWhiteImagesInDir();
-	
+
 	//!< Read detector temperature
 	void readDetectorTemperature();
-	
+
 	//!< Set debug mode in server
 	int setDebugMode(unsigned short flag);
-	
+
 	//!< Show processing and transmission time in server
 	int showTimers(unsigned short flag);
+
+	//!< Create the dead noisy pixel mask
+	int createDeadNoisyMask();
 };
 
 }; // namespace imXpad
