@@ -53,10 +53,9 @@ Camera initialisation
 ......................
 
 
-imXpad camera must be initialisated using 3 parameters:
+imXpad camera must be initialisated using 2 parameters:
 	1) The IP adress where the USB or PCI server is running
 	2) The port number use by the server to communicate.
-	3) The detector model.
 	
 Std capabilites
 ................
@@ -67,9 +66,9 @@ Std capabilites
 
 * HwSync: 
 
-  get/setTrigMode(): the only supported mode are IntTrig, ExtTrigSingle, ExtGate.
+  get/setTrigMode(): the only supported mode are IntTrig, ExtGate, ExtTrigMult, ExtTrigSingle.
 
-Refer to: http://80.15.49.71/manuals.html for a whole description of detector capabilities.
+Refer to: http://imxpad.com/templates/SoftwareDocumentation/softwareDocumentation.html for a whole description of detector capabilities.
 
 Optional capabilites
 .....................
@@ -127,3 +126,13 @@ This is a python code example for a simple test:
 
   #To abort current process
   #CT.stopAcq()
+
+  #Load Calibration from file
+  #cam.loadCalibrationFromFile("./S70.cfg")
+
+  #Perform Calibrations 0-SLOW, 1-MEDIUM, 2-FAST
+  #cam.calibrationOTN(0)
+  #cam.calibrationOTNPulse(0)
+  #cam.calibrationBEAM(1000000,60,0) # 1s->exposure time, 60->ITHL_MAX, 0->SLOW
+
+  
