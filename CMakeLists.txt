@@ -39,7 +39,7 @@ target_include_directories(lima${NAME} PUBLIC "${CMAKE_SOURCE_DIR}/third-party/l
 #LIBRARY
 target_link_libraries(lima${NAME} limacore)
 
-include(CameraVERSION)
+limatools_set_library_soversion(lima${NAME} "VERSION")
 install(TARGETS lima${NAME} LIBRARY DESTINATION lib)
 
 if(LIMA_ENABLE_PYTHON)
