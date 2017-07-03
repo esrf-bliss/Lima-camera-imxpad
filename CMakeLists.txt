@@ -43,7 +43,7 @@ include(CameraVERSION)
 install(TARGETS lima${NAME} LIBRARY DESTINATION lib)
 
 if(LIMA_ENABLE_PYTHON)
-    include(CameraRunSIP)
+    limatools_run_sip_for_camera(${NAME})
     install(FILES python/__init__.py DESTINATION "${PYTHON_SITE_PACKAGES_DIR}/Lima/ImXPAD")
 endif()
 
