@@ -28,6 +28,10 @@ set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--add-needed")
 set(${NAME}_srcs src/imXpadCamera.cpp  src/imXpadInterface.cpp
 	 src/imXpadDetInfoCtrlObj.cpp src/imXpadSyncCtrlObj.cpp
 	 src/imXpadClient.cpp)
+
+if(LIMA_ENABLE_CONFIG)
+	list(APPEND ${NAME}_srcs src/imXpadConfig.cpp)
+endif()	
 	 
 add_library(lima${NAME} SHARED ${imxpad_srcs})
 
@@ -44,7 +48,7 @@ install(TARGETS lima${NAME} LIBRARY DESTINATION lib)
 
 if(LIMA_ENABLE_PYTHON)
     limatools_run_sip_for_camera(${NAME})
-    install(FILES python/__init__.py DESTINATION "${PYTHON_SITE_PACKAGES_DIR}/Lima/ImXPAD")
+    install(FILES python/__init__.py DESTINATION "${PYTHON_SITE_PACKAGES_DIR}/Lima/ImXpad")
 endif()
 
 if(LIMA_ENABLE_TESTS)
