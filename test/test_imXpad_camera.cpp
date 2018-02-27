@@ -24,7 +24,7 @@
 #include "lima/CtAcquisition.h"
 #include "lima/CtSaving.h"
 
-#include "imXpadCamera.h"
+#include "../include/imXpadCamera.h"
 
 using namespace std;
 using namespace lima;
