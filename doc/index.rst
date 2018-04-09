@@ -9,46 +9,36 @@ imXPAD
 Introduction
 ````````````
 
-The imXpad detectors benefit of hybrid pixel technology, which leads to major advantages compared to the other technologies. These advantages are mainly provided by direct photon conversion and real time electronic analysis of X-ray photons. This allows for direct photon counting and energy selection. 
+The imXpad detectors benefit of hybrid pixel technology, which leads to major advantages compared to the other technologies. These advantages are mainly provided by direct photon conversion and real time electronic analysis of X-ray photons. This allows for direct photon counting and energy selection.
 
-XPAD detectors key features compared to CCDs and CMOS pixels detectors are: 
-- Noise suppression
-- Energy selection
-- Almost infinite dynamic range
-- High Quantum Efficiency (DQE(0) ~100%, dose reduction)
-- Ultra fast electronic shutter (10 ns)
-- Frame rate > 500 Hz
+XPAD detectors key features compared to CCDs and CMOS pixels detectors are:
+
+  - Noise suppression
+  - Energy selection
+  - Almost infinite dynamic range
+  - High Quantum Efficiency (DQE(0) ~100%, dose reduction)
+  - Ultra fast electronic shutter (10 ns)
+  - Frame rate > 500 Hz
 
 Prerequisite
 ````````````
 In order to operate the imXpad detector, the USB-server or the PCI-server must be running in the computer attached to the detector.
 
 Installation & Module configuration
-````````````````````````````````````
--  follow first the steps for the linux installation :ref:`linux_installation`
+```````````````````````````````````
 
-The minimum configuration file is *config.inc*:
+Follow the generic instructions in :ref:`build_installation`. If using CMake directly, add the following flag:
 
 .. code-block:: sh
 
-  COMPILE_CORE=1
-  COMPILE_SIMULATOR=0
-  COMPILE_SPS_IMAGE=1
-  COMPILE_IMXPAD=1
-  COMPILE_CONFIG=1
-  COMPILE_GLDISPLAY=0
-  LINK_STRICT_VERSION=0
-  export COMPILE_CORE COMPILE_SPS_IMAGE COMPILE_SIMULATOR \       
-       COMPILE_IMXPAD \
-       COMPILE_GLDISPLAY \
-       LINK_STRICT_VERSION
-    
--  start the compilation :ref:`linux_compilation`
+ -DLIMACAMERA_IMXPAD=true
 
--  finally for the Tango server installation :ref:`tango_installation`
+For the Tango server installation, refers to :ref:`tango_installation`.
 
 Initialisation and Capabilities
-````````````````````````````````
+```````````````````````````````
+
+Implementing a new plugin for new detector is driven by the LIMA framework but the developer has some freedoms to choose which standard and specific features will be made available. This section is supposed to give you the correct information regarding how the camera is exported within the LIMA framework.
 
 Camera initialisation
 ......................
@@ -57,27 +47,28 @@ Camera initialisation
 imXpad camera must be initialisated using 2 parameters:
 	1) The IP adress where the USB or PCI server is running
 	2) The port number use by the server to communicate.
-	
-Std capabilites
+
+Std capabilities
 ................
 
 * HwDetInfo
 
   getCurrImageType/getDefImageType():
 
-* HwSync: 
+* HwSync:
 
   get/setTrigMode(): the only supported mode are IntTrig, ExtGate, ExtTrigMult, ExtTrigSingle.
 
 Refer to: http://imxpad.com/templates/SoftwareDocumentation/softwareDocumentation.html for a whole description of detector capabilities.
 
-Optional capabilites
+Optional capabilities
 .....................
 
-This plugin does not use optional hardware capabilities.
+This plugin does not offer optional hardware capabilities.
 
 How to use
-````````````
+``````````
+
 This is a python code example for a simple test:
 
 .. code-block:: python
@@ -110,7 +101,7 @@ This is a python code example for a simple test:
   #To change acquisition mode
   cam.setAcquisitionMode(cam.XpadAcquisitionMode.Standard)
 
-  #To set Triggers. Possibilities: Core.IntTrig, Core.ExtGate, Core.ExtTrigMult, Core.ExtTrigSingle. 
+  #To set Triggers. Possibilities: Core.IntTrig, Core.ExtGate, Core.ExtTrigMult, Core.ExtTrigSingle.
   CTa.setTriggerMode(Core.IntTrig)
 
   #To set Outputs.
@@ -135,5 +126,3 @@ This is a python code example for a simple test:
   #cam.calibrationOTN(0)
   #cam.calibrationOTNPulse(0)
   #cam.calibrationBEAM(1000000,60,0) # 1s->exposure time, 60->ITHL_MAX, 0->SLOW
-
-  
