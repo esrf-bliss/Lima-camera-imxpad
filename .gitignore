@@ -12,3 +12,5 @@ html
 xhtest
 test/data/
 test/xpadtest
+build/
+tango/build/
