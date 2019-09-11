@@ -163,6 +163,7 @@ int XpadClient::sendParametersFile(char* filePath){
         stringstream data;
         uint32_t data_size; //htonl(10);
         char data_size_buffer[sizeof(uint32_t)];
+	ssize_t wret;
         
         int count = 0;
         while(!file.eof()){
@@ -177,8 +178,8 @@ int XpadClient::sendParametersFile(char* filePath){
         
         DEB_TRACE() << "Data size = " << data_size;
 
-        write(m_skt, data_size_buffer, sizeof(uint32_t));
-        write(m_skt, data.str().c_str(), data_size);
+        wret = write(m_skt, data_size_buffer, sizeof(uint32_t));
+        wret = write(m_skt, data.str().c_str(), data_size);
         this->getChar();
 
         file.close();
@@ -202,7 +203,8 @@ int XpadClient::receiveParametersFile(char* filePath){
 
     uint32_t data_size = 0;
     uint32_t bytes_received = 0;
-
+    ssize_t wret;
+    
     unsigned char data_chain[sizeof(uint32_t)];
 
     while (read(m_skt, data_chain, sizeof(uint32_t)) < 0);
@@ -222,7 +224,7 @@ int XpadClient::receiveParametersFile(char* filePath){
             stringstream message;
             message << "File received\n";
             string tmp = message.str();
-            write(m_skt,(char *)tmp.c_str(),tmp.length());
+            wret = write(m_skt,(char *)tmp.c_str(),tmp.length());
 
             return 0;
         }
@@ -230,7 +232,7 @@ int XpadClient::receiveParametersFile(char* filePath){
             stringstream message;
             message << "File not saved into file\n";
             string tmp = message.str();
-            write(m_skt,(char *)tmp.c_str(),tmp.length());
+            wret = write(m_skt,(char *)tmp.c_str(),tmp.length());
 
             return -1;
         }
@@ -239,7 +241,7 @@ int XpadClient::receiveParametersFile(char* filePath){
         stringstream message;
         message << "File not received\n";
         string tmp = message.str();
-        write(m_skt,(char *)tmp.c_str(),tmp.length());
+        wret = write(m_skt,(char *)tmp.c_str(),tmp.length());
 
         return -1;
     }
@@ -260,7 +262,8 @@ int XpadClient::getDataExpose(void *bptr, unsigned short xpadFormat) {
     int16_t *buffer_short;
     int32_t *buffer_int;
     int32_t *data_buff;
-
+    ssize_t wret;
+    
     if (xpadFormat==0)
         buffer_short = (int16_t *)bptr;
     else
@@ -285,8 +288,9 @@ int XpadClient::getDataExpose(void *bptr, unsigned short xpadFormat) {
 
         unsigned char *data = new unsigned char[data_size];
         data_buff = new int32_t[line_final_image*column_final_image ];
-
         ssize_t bytes;
+	ssize_t wret;
+
         while(bytes_received < data_size){
             while ((bytes = read(m_skt, data+bytes_received, data_size-bytes_received)) < 0);
             bytes_received += bytes;
@@ -297,7 +301,7 @@ int XpadClient::getDataExpose(void *bptr, unsigned short xpadFormat) {
         //message << "Image received\n";
         //string tmp = message.str();
         //write(m_skt,(char *)tmp.c_str(),tmp.length());
-        write(m_skt,"\n",sizeof(char));
+        wret = write(m_skt,"\n",sizeof(char));
 
         uint32_t count = 0;
         int i=0;
@@ -321,7 +325,7 @@ int XpadClient::getDataExpose(void *bptr, unsigned short xpadFormat) {
 
     }
     else{
-        write(m_skt,"\n",sizeof(char));
+        wret = write(m_skt,"\n",sizeof(char));
         return -1;
     }
 }
