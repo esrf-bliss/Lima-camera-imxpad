@@ -4,7 +4,7 @@
 [![Version](https://img.shields.io/conda/vn/esrf-bcu/lima-camera-imxpad.svg?style=flat)](https://anaconda.org/esrf-bcu)
 [![Platform](https://img.shields.io/conda/pn/esrf-bcu/lima-camera-imxpad.svg?style=flat)](https://anaconda.org/esrf-bcu)
 
-# LImA Andor SDK3 Camera Plugin
+# LImA ImXPAD Camera Plugin
 
 This is the LImA plugin for ImXPAD cameras.
 
@@ -27,5 +27,3 @@ Lima is a C++ library which can be used with many different cameras. The library
 ## Documentation
 
 The documentation is available [here](https://lima.blissgarden.org)
-
-
