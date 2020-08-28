@@ -140,10 +140,8 @@ class imXPAD(PyTango.Device_4Impl):
     def loadConfig(self,config_prefix) :
         if config_prefix == self._config_name: return
         config_path = self.config_path        
-        #_imXPADCam.loadConfigGFromFile(os.path.join(config_path,'%s.cfg' % config_prefix))
-        #_imXPADCam.loadConfigLFromFile(os.path.join(config_path,'%s.cfl' % config_prefix))
-        _imXPADCam.loadConfigGFromFile(os.path.join(config_path,'%s.cfg' ))
-        _imXPADCam.loadConfigLFromFile(os.path.join(config_path,'%s.cfl' ))
+        _imXPADCam.loadConfigGFromFile(os.path.join(config_path,'%s.cfg' % config_prefix))
+        _imXPADCam.loadConfigLFromFile(os.path.join(config_path,'%s.cfl' % config_prefix))
         self._config_name = config_prefix
         self._ITHL_offset = 0
 
@@ -151,12 +149,8 @@ class imXPAD(PyTango.Device_4Impl):
     def saveConfig(self,config_prefix) :
         config_path = self.config_path
         print ('saveConfig',config_path,config_prefix)
-       # _imXPADCam.saveConfigGToFile(os.path.join(config_path,'%s.cfg' % config_prefix))
-       # _imXPADCam.saveConfigLToFile(os.path.join(config_path,'%s.cfl' % config_prefix))
-        
-        _imXPADCam.saveConfigGToFile(os.path.join(config_path,'%s.cfg'))
-        _imXPADCam.saveConfigLToFile(os.path.join(config_path,'%s.cfl'))
-        
+        _imXPADCam.saveConfigGToFile(os.path.join(config_path,'%s.cfg' % config_prefix))
+        _imXPADCam.saveConfigLToFile(os.path.join(config_path,'%s.cfl' % config_prefix))
         self._config_name = config_prefix
         self._ITHL_offset = 0
 
