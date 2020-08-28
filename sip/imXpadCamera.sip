@@ -169,16 +169,16 @@ public:
     int digitalTest(unsigned short mode);
 
     //! Read global configuration values from file and load them in the detector
-    int loadConfigGFromFile(char *fpath);
+    int loadConfigGFromFile(std::string fpath);
 
     //! Save global configuration values from detector to file
-    int saveConfigGToFile(char *fpath);
+    int saveConfigGToFile(std::string fpath);
 
     //! Send value to register for all chips in global configuration
-    int loadConfigG(char *regID, unsigned short value);
+    int loadConfigG(std::string regID, unsigned short value);
 
     //! Read values from register and from all chips in global configuration
-    int readConfigG(char *regID);
+    int readConfigG(std::string regID);
 
     //! Load default values for global configuration
     int loadDefaultConfigGValues();
@@ -193,10 +193,10 @@ public:
     int loadFlatConfigL(unsigned short flat_value);
 
     //! Read local configuration values from file and save it in detector
-    int loadConfigLFromFile(char *fpath);
+    int loadConfigLFromFile(std::string fpath);
 
     //! Save local configuration values from detector to file
-    int saveConfigLToFile(char *fpath);
+    int saveConfigLToFile(std::string fpath);
 
     //! Set flag for geometrical corrections
     void setGeometricalCorrectionFlag(unsigned short flag);
@@ -268,10 +268,10 @@ public:
     int calibrationBEAM(unsigned int time, unsigned int ITHLmax, unsigned short calibrationConfiguration);
 
     //! Load a Calibration file from disk
-    int loadCalibrationFromFile(char *fpath);
+    int loadCalibrationFromFile(std::string fpath);
 
     //! Save calibration to a file
-    int saveCalibrationToFile(char *fpath);
+    int saveCalibrationToFile(std::string fpath);
 
     //! Cancel current operation
     void abortCurrentProcess();
@@ -295,13 +295,13 @@ public:
     int getConnectionID();
 
     //!< Creates a white image for flat field and dead pixel corrections
-    int createWhiteImage(char* fileName);
+    int createWhiteImage(std::string fileName);
 
     //!< Deletes an existing white image.
-	int deleteWhiteImage(char* fileName);
+	int deleteWhiteImage(std::string fileName);
 
 	//!< Retreives a list of existing white images in server
-	int setWhiteImage(char* fileName);
+	int setWhiteImage(std::string fileName);
 
 	//!< Get a list of White images stored in the server
 	void getWhiteImagesInDir();

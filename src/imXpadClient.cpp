@@ -150,7 +150,7 @@ void XpadClient::sendNoWait(string cmd) {
     sendCmd(cmd);
 }
 
-int XpadClient::sendParametersFile(char* filePath){
+int XpadClient::sendParametersFile(const char* filePath){
 
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "sendFile(" << filePath << ")";
@@ -198,7 +198,7 @@ int XpadClient::sendParametersFile(char* filePath){
         return -1;
 }
 
-int XpadClient::receiveParametersFile(char* filePath){
+int XpadClient::receiveParametersFile(const char* filePath){
     DEB_MEMBER_FUNCT();
 
     uint32_t data_size = 0;
@@ -851,4 +851,3 @@ void XpadClient::error_handler(const string errmsg) {
     m_errorMessage = errmsg;
     DEB_TRACE() << m_errorMessage;
 }
-

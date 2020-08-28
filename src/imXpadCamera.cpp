@@ -1504,7 +1504,7 @@ int Camera::digitalTest(unsigned short mode){
   return ret;
 }
 
-int Camera::loadConfigGFromFile(char *fpath){
+int Camera::loadConfigGFromFile(std::string fpath){
   DEB_MEMBER_FUNCT();
   DEB_TRACE() << "********** Inside of Camera::loadConfigGFromFile ***********";
 
@@ -1516,7 +1516,7 @@ int Camera::loadConfigGFromFile(char *fpath){
 
   m_xpad->sendNoWait(cmd.str());
 
-  ret = m_xpad->sendParametersFile(fpath);
+  ret = m_xpad->sendParametersFile(fpath.c_str());
 
   if(ret == 0)
   DEB_TRACE() << "Global configuration loaded from file SUCCESFULLY";
@@ -1530,7 +1530,7 @@ int Camera::loadConfigGFromFile(char *fpath){
   return ret;
 }
 
-int Camera::saveConfigGToFile(char *fpath){
+int Camera::saveConfigGToFile(std::string fpath){
   DEB_MEMBER_FUNCT();
   DEB_TRACE() << "********** Inside of Camera::saveConfigGToFile ***********";
 
@@ -1615,7 +1615,7 @@ int Camera::saveConfigGToFile(char *fpath){
   return ret;
 }
 
-int Camera::loadConfigG(char *regID, unsigned short value){
+int Camera::loadConfigG(std::string regID, unsigned short value){
   DEB_MEMBER_FUNCT();
   DEB_TRACE() << "********** Inside of Camera::loadConfigG ***********";
 
@@ -1651,7 +1651,7 @@ else{
 }
 }
 
-int Camera::readConfigG(char *regID){
+int Camera::readConfigG(std::string regID){
   DEB_MEMBER_FUNCT();
   DEB_TRACE() << "********** Inside of Camera::readConfigG ***********";
 
@@ -1801,7 +1801,7 @@ int Camera::loadFlatConfigL(unsigned short flat_value)
   return 0; //ret;
 }
 
-int Camera::loadConfigLFromFile(char *fpath){
+int Camera::loadConfigLFromFile(std::string fpath){
   DEB_MEMBER_FUNCT();
   DEB_TRACE() << "********** Inside of Camera::loadConfigLFromFile ***********";
 
@@ -1813,7 +1813,7 @@ int Camera::loadConfigLFromFile(char *fpath){
 
   m_xpad->sendNoWait(cmd.str());
 
-  ret = m_xpad->sendParametersFile(fpath);
+  ret = m_xpad->sendParametersFile(fpath.c_str());
 
   if(ret == 0)
   DEB_TRACE() << "Local configuration loaded from file SUCCESFULLY";
@@ -1829,7 +1829,7 @@ int Camera::loadConfigLFromFile(char *fpath){
 
 }
 
-int Camera::saveConfigLToFile(char *fpath){
+int Camera::saveConfigLToFile(std::string fpath){
   DEB_MEMBER_FUNCT();
   DEB_TRACE() << "********** Inside of Camera::saveConfigLToFile ***********";
 
@@ -1840,7 +1840,7 @@ int Camera::saveConfigLToFile(char *fpath){
   cmd << "ReadConfigL";
   m_xpad->sendNoWait(cmd.str());
 
-  if (!m_xpad->receiveParametersFile(fpath))
+  if (!m_xpad->receiveParametersFile(fpath.c_str()))
   ret = 0;
   else
   ret = -1;
@@ -2165,7 +2165,7 @@ int Camera::calibrationBEAM(unsigned int time, unsigned int ITHLmax, unsigned sh
 
 }
 
-int Camera::loadCalibrationFromFile(char *fpath){
+int Camera::loadCalibrationFromFile(std::string fpath){
 
   DEB_MEMBER_FUNCT();
   DEB_TRACE() << "********** Inside of Camera::loadCalibrationFromFile ***********";
@@ -2187,7 +2187,7 @@ int Camera::loadCalibrationFromFile(char *fpath){
   return 0; //ret1 & ret2;
 }
 
-int Camera::saveCalibrationToFile(char *fpath){
+int Camera::saveCalibrationToFile(std::string fpath){
 
   DEB_MEMBER_FUNCT();
   DEB_TRACE() << "********** Inside of Camera::saveCalibrationToFile ***********";
@@ -2309,7 +2309,7 @@ int Camera::getConnectionID(){
   return this->getBurstNumber();
 }
 
-int Camera::createWhiteImage(char* fileName){
+int Camera::createWhiteImage(std::string fileName){
 
   DEB_MEMBER_FUNCT();
   DEB_TRACE() << "********** Inside of Camera::createWhiteImage ***********";
@@ -2325,7 +2325,7 @@ int Camera::createWhiteImage(char* fileName){
 
   return ret;
 }
-int Camera::deleteWhiteImage(char* fileName){
+int Camera::deleteWhiteImage(std::string fileName){
   DEB_MEMBER_FUNCT();
   DEB_TRACE() << "********** Inside of Camera::deleteWhiteImage ***********";
 
@@ -2340,7 +2340,7 @@ int Camera::deleteWhiteImage(char* fileName){
 
   return ret;
 }
-int Camera::setWhiteImage(char* fileName){
+int Camera::setWhiteImage(std::string fileName){
   DEB_MEMBER_FUNCT();
   DEB_TRACE() << "********** Inside of Camera::setWhiteImage ***********";
 
