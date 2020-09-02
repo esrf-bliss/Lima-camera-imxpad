@@ -18,7 +18,6 @@ build:
 requirements:
   host:
     - python {{ python }}
-    - numpy
     - sip 4.19.8              # For compatibility with pyqt 5.9.2
     - lima-core
   build:
@@ -31,14 +30,8 @@ requirements:
     - {{ pin_compatible('lima-core', max_pin='x.x') }}
 
 test:
-  requires:
-    - cmake
   imports:
     - Lima.imXpad
-  commands:
-    - cmake --version
-    - ctest --version
-    - cpack --version
 
 about:
   home: https://github.com/esrf-bliss/Lima

@@ -139,8 +139,7 @@ class imXPAD(PyTango.Device_4Impl):
     @Core.DEB_MEMBER_FUNCT
     def loadConfig(self,config_prefix) :
         if config_prefix == self._config_name: return
-
-        config_path = self.config_path
+        config_path = self.config_path        
         _imXPADCam.loadConfigGFromFile(os.path.join(config_path,'%s.cfg' % config_prefix))
         _imXPADCam.loadConfigLFromFile(os.path.join(config_path,'%s.cfl' % config_prefix))
         self._config_name = config_prefix
@@ -508,7 +507,7 @@ def get_control(cam_ip_address = "localhost",port=3456,**keys) :
     global _imXPADCam
     global _imXPADInterface
     port = int(port)
-    print ("Getting control for IMXPAD: %s / %s" % (cam_ip_address, port))
+    print ("Getting control for REBIRX: %s / %s" % (cam_ip_address, port))
     if _imXPADCam is None:
         _imXPADCam = XpadAcq.Camera(cam_ip_address,port)
         _imXPADInterface = XpadAcq.Interface(_imXPADCam)

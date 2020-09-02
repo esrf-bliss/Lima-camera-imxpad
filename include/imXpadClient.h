@@ -56,8 +56,8 @@ public:
 	void disconnectFromServer();
 	int initServerDataPort();
     //void getData(void* bptr, unsigned short xpad_format);
-    int sendParametersFile(char* filePath);
-    int receiveParametersFile(char* filePath);
+    int sendParametersFile(const char* filePath);
+    int receiveParametersFile(const char* filePath);
     void sendExposeCommand();
     int getDataExpose(void* bptr, unsigned short xpadFormat);
     void getExposeCommandReturn(int &value);

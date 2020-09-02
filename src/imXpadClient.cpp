@@ -150,12 +150,13 @@ void XpadClient::sendNoWait(string cmd) {
     sendCmd(cmd);
 }
 
-int XpadClient::sendParametersFile(char* filePath){
+int XpadClient::sendParametersFile(const char* filePath){
 
     DEB_MEMBER_FUNCT();
     DEB_TRACE() << "sendFile(" << filePath << ")";
     
-    sleep(0.5);
+  //  sleep(0.5);   
+    
     
     ifstream file(filePath, ios::in|ios::binary);
     if (file.is_open()){
@@ -163,7 +164,7 @@ int XpadClient::sendParametersFile(char* filePath){
         stringstream data;
         uint32_t data_size; //htonl(10);
         char data_size_buffer[sizeof(uint32_t)];
-	ssize_t wret;
+		ssize_t wret;
         
         int count = 0;
         while(!file.eof()){
@@ -173,8 +174,7 @@ int XpadClient::sendParametersFile(char* filePath){
             count ++;
         }
         data_size = (uint32_t) count;
-
-        memcpy(&data_size_buffer, &data_size, sizeof(uint32_t));
+        memcpy(data_size_buffer, &data_size, sizeof(uint32_t));
         
         DEB_TRACE() << "Data size = " << data_size;
 
@@ -198,7 +198,7 @@ int XpadClient::sendParametersFile(char* filePath){
         return -1;
 }
 
-int XpadClient::receiveParametersFile(char* filePath){
+int XpadClient::receiveParametersFile(const char* filePath){
     DEB_MEMBER_FUNCT();
 
     uint32_t data_size = 0;
@@ -249,9 +249,7 @@ int XpadClient::receiveParametersFile(char* filePath){
 
 void XpadClient::sendExposeCommand(){
     DEB_MEMBER_FUNCT();
-
     stringstream cmd;
-
     cmd << "StartExposure";
     sendNoWait(cmd.str());
 }
@@ -524,6 +522,7 @@ int XpadClient::waitForResponse(int& value) {
         switch (r) {
         case CLN_NEXT_PROMPT:
             error_handler("(warning) No return code from the server.");
+            
             m_prompts++;
             return -1;
         case CLN_NEXT_ERRMSG:
@@ -792,7 +791,7 @@ int XpadClient::nextLine(string *errmsg, int *ivalue, double *dvalue, string *sv
         return CLN_NEXT_UNKNOWN;
     }
 }
-
+/*
 int XpadClient::getChar() {
     DEB_MEMBER_FUNCT();
     int r;
@@ -814,6 +813,21 @@ int XpadClient::getChar() {
     return m_rd_buff[m_cur_pos++];
 
 }
+*/
+int XpadClient::getChar() {
+    DEB_MEMBER_FUNCT();
+    int r;
+    char c;
+    if (!m_valid) {
+        THROW_HW_ERROR(Error) << "Not connected to xpad server ";
+    }    
+	r = recv(m_skt, &c, 1, 0) ;
+	if (r <= 0) {
+		return -1;
+	}
+    return c;
+}
+
 
 void XpadClient::errmsg_handler(const string errmsg) {
     DEB_MEMBER_FUNCT();
@@ -837,4 +851,3 @@ void XpadClient::error_handler(const string errmsg) {
     m_errorMessage = errmsg;
     DEB_TRACE() << m_errorMessage;
 }
-
