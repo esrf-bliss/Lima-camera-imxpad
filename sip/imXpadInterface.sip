@@ -45,7 +45,7 @@ public:
 	virtual void prepareAcq();
 	virtual void startAcq();
 	virtual void stopAcq();
-	virtual void getStatus(StatusType& status);
+	virtual void getStatus(StatusType& status /Out/);
 	virtual int getNbHwAcquiredFrames();
 };
 
