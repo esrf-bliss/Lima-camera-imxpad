@@ -43,7 +43,7 @@ using namespace lima;
 using namespace lima::imXpad;
 
 
-#define CHECK_DETECTOR_ACCESS {if(m_thread_running == false || (m_thread_running && m_process_id > 0) || (m_acq_frame_nb == m_nb_frames)){ }else {return;}}
+#define CHECK_DETECTOR_ACCESS {if(m_thread_running == false || (m_thread_running && m_process_id > 0) || (m_nb_frames != 0 && m_acq_frame_nb == m_nb_frames)){ }else {return;}}
 
 
 
@@ -191,8 +191,10 @@ int Camera::prepareAcq() {
   stringstream cmd1;
 
   m_image_file_format = 1;
-
-  cmd1 << "SetExposureParameters " << m_nb_frames << " " << m_exp_time_usec << " "
+  //if live mode requested (0 frame)
+  int nb_frames = (m_nb_frames == 0)? 9999: m_nb_frames;
+  
+  cmd1 << "SetExposureParameters " << nb_frames << " " << m_exp_time_usec << " "
   << m_lat_time_usec << " " << m_overflow_time << " " << m_xpad_trigger_mode << " " << m_xpad_output_signal_mode << " "
   << m_geometrical_correction_flag << " " << m_flat_field_correction_flag << " "
   << m_image_transfer_flag << " " << m_image_file_format << " " << m_acquisition_mode << " " << m_stack_images
@@ -239,7 +241,12 @@ void Camera::startAcq() {
   getTrigMode(trig_mode);
   // detector can miss the trigger if we dont wait here 17ms minimum before returning
   // no wait to get synchronize with the read detector start
+  // An other delay workaround when live-mode is started using hw triggering, 100ms seems enough
+
   if (trig_mode  != IntTrig) {
+    if (m_nb_frames == 0)
+      usleep(100000);      
+    else
       usleep(17000);
   }
 }
@@ -318,6 +325,10 @@ void Camera::getStatus(XpadStatus& status) {
     } else if (state.compare("Resetting") == 0) {
       status.state = XpadStatus::Resetting;
     }
+    //DEB_TRACE() << "State str is [" << state << "]";
+  }
+  else {
+    status.state =  XpadStatus::Acquiring;
   }
 }
 
@@ -370,7 +381,7 @@ void Camera::AcqThread::threadFunction()
 
 					if (m_cam.m_image_transfer_flag == 1)
 					{
-						while (continueFlag && (!m_cam.m_nb_frames || m_cam.m_acq_frame_nb < m_cam.m_nb_frames))
+						while (continueFlag && (m_cam.m_nb_frames == 0 || m_cam.m_acq_frame_nb < m_cam.m_nb_frames))
 						{
 
 							DEB_TRACE() << m_cam.m_acq_frame_nb;
@@ -408,7 +419,7 @@ void Camera::AcqThread::threadFunction()
 						int16_t *buffer_short;
 						int32_t *buffer_int;
 
-						while (continueFlag && (!m_cam.m_nb_frames || m_cam.m_acq_frame_nb < m_cam.m_nb_frames) && m_cam.m_quit == false)
+						while (continueFlag && (m_cam.m_nb_frames == 0 || m_cam.m_acq_frame_nb < m_cam.m_nb_frames) && m_cam.m_quit == false)
 						{
 
 							void *bptr = buffer_mgr.getFrameBufferPtr(m_cam.m_acq_frame_nb);
