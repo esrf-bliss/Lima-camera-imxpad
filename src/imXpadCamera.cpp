@@ -245,8 +245,16 @@ void Camera::startAcq() {
 
   while (!m_thread_running)
   m_cond.wait();
+  
+  TrigMode trig_mode;
+  getTrigMode(trig_mode);
+  // detector can miss the trigger if we dont wait here 17ms minimum before returning
+  // no wait to get synchronize with the read detector start
 
   DEB_TRACE() << "********** Outside of Camera::startAcq ***********";
+  if (trig_mode  != IntTrig) {
+      usleep(17000);
+  }
 }
 
 void Camera::waitAcqEnd(){
