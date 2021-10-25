@@ -242,7 +242,6 @@ void Camera::startAcq() {
   // detector can miss the trigger if we dont wait here 17ms minimum before returning
   // no wait to get synchronize with the read detector start
   // An other delay workaround when live-mode is started using hw triggering, 100ms seems enough
-
   if (trig_mode  != IntTrig) {
     if (m_nb_frames == 0)
       usleep(100000);      
