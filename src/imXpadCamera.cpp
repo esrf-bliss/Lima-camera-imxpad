@@ -300,8 +300,7 @@ int Camera::getDataExposeReturn() {
 void Camera::getStatus(XpadStatus& status) {
   DEB_MEMBER_FUNCT();
 
-  CHECK_DETECTOR_ACCESS
-  if (m_thread_running == false || (m_thread_running && m_process_id > 0) || (m_acq_frame_nb == m_nb_frames)){
+  if (m_thread_running == false || (m_thread_running && m_process_id > 0) || (m_nb_frames !=0 && m_acq_frame_nb == m_nb_frames)){
 
     stringstream cmd;
     string str;
