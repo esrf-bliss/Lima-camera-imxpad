@@ -81,7 +81,7 @@ XpadClient::~XpadClient() {
 void XpadClient::sendWait(string cmd) {
     DEB_MEMBER_FUNCT();
     int rc;
-    DEB_TRACE() << "sendWait(" << cmd << ")";
+    //DEB_TRACE() << "sendWait(" << cmd << ")";
     AutoMutex aLock(m_cond.mutex());
     if (waitForPrompt() != 0) {
         disconnectFromServer();
@@ -98,7 +98,7 @@ void XpadClient::sendWait(string cmd) {
 
 void XpadClient::sendWait(string cmd, int& value) {
     DEB_MEMBER_FUNCT();
-    DEB_TRACE() << "sendWait(" << cmd << ")";
+    //DEB_TRACE() << "sendWait(" << cmd << ")";
     AutoMutex aLock(m_cond.mutex());
     if (waitForPrompt() != 0) {
         disconnectFromServer();
@@ -112,7 +112,7 @@ void XpadClient::sendWait(string cmd, int& value) {
 
 void XpadClient::sendWait(string cmd, double& value) {
     DEB_MEMBER_FUNCT();
-    DEB_TRACE() << "sendWait(" << cmd << ")";
+    //DEB_TRACE() << "sendWait(" << cmd << ")";
     AutoMutex aLock(m_cond.mutex());
     if (waitForPrompt() != 0) {
         disconnectFromServer();
@@ -126,7 +126,7 @@ void XpadClient::sendWait(string cmd, double& value) {
 
 void XpadClient::sendWait(string cmd, string& value) {
     DEB_MEMBER_FUNCT();
-    DEB_TRACE() << "sendWait(" << cmd << ")";
+    //DEB_TRACE() << "sendWait(" << cmd << ")";
     AutoMutex aLock(m_cond.mutex());
     if (waitForPrompt() != 0) {
         disconnectFromServer();
@@ -141,7 +141,7 @@ void XpadClient::sendWait(string cmd, string& value) {
 
 void XpadClient::sendNoWait(string cmd) {
     DEB_MEMBER_FUNCT();
-    DEB_TRACE() << "sendNoWait(" << cmd << ")";
+    //DEB_TRACE() << "sendNoWait(" << cmd << ")";
     AutoMutex aLock(m_cond.mutex());
     if (waitForPrompt() != 0) {
         disconnectFromServer();
@@ -458,7 +458,7 @@ vector<string> XpadClient::getDebugMessages() const {
 
 void XpadClient::sendCmd(const string cmd) {
     //cout << "Inside sendCmd" << endl;
-    cout << "cmd: " << cmd << endl;
+    //cout << "cmd: " << cmd << endl;
     DEB_MEMBER_FUNCT();
     int r, len;
     char *p;
@@ -487,7 +487,7 @@ int XpadClient::waitForPrompt() {
     if (!m_valid) {
         THROW_HW_ERROR(Error) << "Not connected to server ";
     }
-    DEB_TRACE() << "checking connection with recv";
+    //DEB_TRACE() << "checking connection with recv";
     r = recv(m_skt, &tmp, 1, MSG_PEEK | MSG_DONTWAIT);
     if (r == 0 || (r < 0 && errno != EWOULDBLOCK)) {
         DEB_TRACE() << "waitForPrompt: Connection broken, r= " << r << " errno=" << errno;
@@ -541,7 +541,7 @@ int XpadClient::waitForResponse(int& value) {
             break;
         case CLN_NEXT_INTRET:
             value = code;
-            cout << "\t---> value: " << value << endl;
+            //cout << "\t---> value: " << value << endl;
             if (value == -1){
                 string error_message;
                 waitForResponse(error_message);
@@ -652,7 +652,7 @@ int XpadClient::waitForResponse(string& value) {
             error_handler("Server responded with a double");
             return -1;
         case CLN_NEXT_STRRET:
-            cout << "\t---> message: " << value << endl;
+	    //cout << "\t---> message: " << value << endl;
             return (value.length() == 0) ? -1 : 0;
         default:
             THROW_HW_ERROR(Error) << "Programming error. Please report";

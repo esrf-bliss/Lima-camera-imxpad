@@ -159,13 +159,10 @@ int Camera::init() {
   else if (ret == -1)
   throw LIMA_HW_EXC(Error, "xpadInit FAILED!");
 
-  DEB_TRACE() << "********** Outside of Camera::init ***********";
-
   return ret;
 }
 void Camera::quit() {
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::exit ***********";
 
   stringstream cmd;
 
@@ -173,25 +170,20 @@ void Camera::quit() {
   cmd << "Exit";
   m_xpad->sendNoWait(cmd.str());
   m_xpad_alt->sendNoWait(cmd.str());
-
-  DEB_TRACE() << "********** Outside of Camera::exit ***********";
 }
 
 void Camera::reset() {
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::reset ***********";
 
   stringstream cmd1;
   cmd1 << "ResetDetector";
   m_xpad->sendNoWait(cmd1.str());
   DEB_TRACE() << "Reset of detector  -> OK";
 
-  DEB_TRACE() << "********** Outside of Camera::reset ***********";
 }
 
 int Camera::prepareAcq() {
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::prepareAcq ***********";
 
   //this->waitAcqEnd();
 
@@ -223,14 +215,11 @@ int Camera::prepareAcq() {
   //else
   //throw LIMA_HW_EXC(Error, "SetExposure FAILED!");
 
-  DEB_TRACE() << "********** Outside of Camera::prepareAcq ***********";
-
   return value;
 }
 
 void Camera::startAcq() {
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::startAcq ***********";
 
   this->waitAcqEnd();
 
@@ -250,8 +239,6 @@ void Camera::startAcq() {
   getTrigMode(trig_mode);
   // detector can miss the trigger if we dont wait here 17ms minimum before returning
   // no wait to get synchronize with the read detector start
-
-  DEB_TRACE() << "********** Outside of Camera::startAcq ***********";
   if (trig_mode  != IntTrig) {
       usleep(17000);
   }
@@ -259,74 +246,52 @@ void Camera::startAcq() {
 
 void Camera::waitAcqEnd(){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::waitAcqEnd ***********";
 
   while (m_thread_running)
-  m_cond.wait();
+    m_cond.wait();
 
   usleep(m_dead_time);
-
-  DEB_TRACE() << "********** Outside of Camera::waitAcqEnd ***********";
 }
 
 void Camera::setWaitAcqEndTime(unsigned int time){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::setWaitAcqEndTime ***********";
 
   m_dead_time = time;
-
-  DEB_TRACE() << "********** Outside of Camera::waitAcqEnd ***********";
 }
 
 void Camera::stopAcq() {
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::stopAcq ***********";
-
-  //this->waitAcqEnd();
-
-  DEB_TRACE() << "********** Outside of Camera::stopAcq ***********";
 }
 
 
 void Camera::sendExposeCommand(){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::sendExposeCommmand ***********";
 
   m_xpad->sendExposeCommand();
-
-  DEB_TRACE() << "********** Outside of Camera::sendExposeCommand ***********";
 }
 
 int Camera::readFrameExpose(void *bptr, int frame_nb) {
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::readFrameExpose ***********";
 
   DEB_TRACE() << "reading frame " << frame_nb;
 
   int ret;
 
   ret = m_xpad->getDataExpose(bptr, m_image_format);
-
-  DEB_TRACE() << "********** Outside of Camera::readFrameExpose ***********";
-
   return ret;
 }
 
 int Camera::getDataExposeReturn() {
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::getExposeCommandReturn ***********";
 
   int ret;
   m_xpad->getExposeCommandReturn(ret);
-
-  DEB_TRACE() << "********** Outside of Camera::getExposeCommandReturn ***********";
 
   return ret;
 }
 
 void Camera::getStatus(XpadStatus& status) {
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::getStatus ***********";
 
   CHECK_DETECTOR_ACCESS
   if (m_thread_running == false || (m_thread_running && m_process_id > 0) || (m_acq_frame_nb == m_nb_frames)){
@@ -334,6 +299,7 @@ void Camera::getStatus(XpadStatus& status) {
     stringstream cmd;
     string str;
     unsigned short pos;
+    
     cmd << "GetDetectorStatus";
 
     m_xpad_alt->sendWait(cmd.str(), str);
@@ -353,330 +319,12 @@ void Camera::getStatus(XpadStatus& status) {
       status.state = XpadStatus::Resetting;
     }
   }
-
-  DEB_TRACE() << "XpadStatus.state is [" << status.state << "]";
-
-  DEB_TRACE() << "********** Outside of Camera::getStatus ***********";
-
 }
 
 int Camera::getNbHwAcquiredFrames() {
   DEB_MEMBER_FUNCT();
   return m_acq_frame_nb;
 }
-/*
-void Camera::AcqThread::threadFunction() {
-  DEB_MEMBER_FUNCT();
-  HwFrameInfoType frame_info;
-
-  AutoMutex aLock(m_cam.m_cond.mutex());
-  StdBufferCbMgr& buffer_mgr = m_cam.m_bufferCtrlObj.getBuffer();
-
-  while (1) {
-    while (m_cam.m_wait_flag || m_cam.m_quit) {
-      DEB_TRACE() << "Acquisition thread waiting...";
-      DEB_TRACE() << "wait flag value = " << m_cam.m_wait_flag;
-      DEB_TRACE() << "quit flag value = " << m_cam.m_quit;
-      m_cam.m_thread_running = false;
-      m_cam.m_cond.broadcast();
-      //aLock.unlock();
-      m_cam.m_cond.wait();
-    }
-
-    DEB_TRACE() << "Acqisition thread running...";
-    m_cam.m_thread_running = true;
-    m_cam.m_cond.broadcast();
-    aLock.unlock();
-
-    switch(m_cam.m_process_id){
-      case 0:{  //startAcq()
-
-        DEB_TRACE() << "Starting to acquire images...";
-
-        if (m_cam.m_quit == false){
-          m_cam.sendExposeCommand();
-
-          bool continueFlag = true;
-          int ret;
-
-          if (m_cam.m_image_transfer_flag == 1){
-            while (continueFlag && (!m_cam.m_nb_frames || m_cam.m_acq_frame_nb < m_cam.m_nb_frames)) {
-
-              DEB_TRACE() << m_cam.m_acq_frame_nb;
-              void *bptr = buffer_mgr.getFrameBufferPtr(m_cam.m_acq_frame_nb);
-
-              ret = m_cam.readFrameExpose(bptr, m_cam.m_acq_frame_nb);
-
-              if ( ret == 0 ){
-                //HwFrameInfoType frame_info;                
-                frame_info.acq_frame_nb = m_cam.m_acq_frame_nb;
-                continueFlag = buffer_mgr.newFrameReady(frame_info);
-                ++m_cam.m_acq_frame_nb;
-                
-                DEB_TRACE() << "acqThread::threadFunction() newframe ready ";
-                DEB_TRACE() << "acquired " << m_cam.m_acq_frame_nb << " frames, required " << m_cam.m_nb_frames << " frames";
-              }
-              else{
-                continueFlag = false;
-                DEB_TRACE() << "ABORT detected";
-              }
-            }
-            m_cam.getDataExposeReturn();
-          }
-          else{
-
-            DEB_TRACE() << m_cam.m_acq_frame_nb;
-            DEB_TRACE() << m_cam.m_image_size.getWidth() << " " << m_cam.m_image_size.getHeight();
-
-            uint numData = m_cam.m_image_size.getWidth() * m_cam.m_image_size.getHeight();
-
-            int16_t *buffer_short;
-            int32_t *buffer_int;
-
-            while (continueFlag && (!m_cam.m_nb_frames || m_cam.m_acq_frame_nb < m_cam.m_nb_frames) && m_cam.m_quit == false) {
-
-              void *bptr = buffer_mgr.getFrameBufferPtr(m_cam.m_acq_frame_nb);
-
-              if (m_cam.m_image_format == 0)
-              buffer_short = (int16_t *)bptr;
-              else
-              buffer_int = (int32_t *)bptr;
-
-              stringstream fileName;
-
-              fileName << "/opt/imXPAD/tmp_corrected/burst_" << m_cam.m_burstNumber << "_image_" << m_cam.m_acq_frame_nb  << ".bin";
-
-              while (access( fileName.str().c_str(), F_OK ) == -1){
-                if (m_cam.m_quit){
-                  DEB_TRACE() << "ABORT detected";
-                  break;
-                }
-              }
-
-              if (access( fileName.str().c_str(), F_OK ) == 0){
-
-                ifstream file(fileName.str().c_str(), ios::in|ios::binary);
-
-                if (file.is_open()){
-
-                  //DEB_TRACE() << "FILE OPEN";
-                  file.read((char *)buffer_int, numData*sizeof(int32_t));
-
-                  if (m_cam.m_image_format==0){
-                    uint32_t count = 0;
-                    int i=0;
-                    while (count < numData*sizeof(int32_t)){
-                      buffer_short[i] = (uint16_t)(buffer_int[i]);
-                      count += sizeof(int32_t);
-                      i++;
-                    }
-                  }
-                  file.close();
-                }
-
-                remove(fileName.str().c_str());
-
-                HwFrameInfoType frame_info;
-                frame_info.acq_frame_nb = m_cam.m_acq_frame_nb;
-                continueFlag = buffer_mgr.newFrameReady(frame_info);
-                //DEB_TRACE() << "acqThread::threadFunction() newframe ready ";
-                ++m_cam.m_acq_frame_nb;
-
-                //DEB_TRACE() << "acquired " << m_cam.m_acq_frame_nb << " frames, required " << m_cam.m_nb_frames << " frames";
-              }
-            }
-          }
-        }
-
-        break;
-      }
-      case 1:{ //CalibrationOTN
-        int ret;
-        stringstream cmd;
-
-        cmd <<  "CalibrationOTN " << m_cam.m_calibration_configuration;
-        m_cam.m_xpad->sendWait(cmd.str(), ret);
-
-        if(ret == 0)
-        DEB_TRACE() << "Calibration Over-The-Noise finished SUCCESFULLY";
-        else if (ret == 1)
-        DEB_TRACE() << "Calibration Over-The-Noise was ABORTED";
-        else
-        throw LIMA_HW_EXC(Error, "Calibration Over The Noise FAILED!");
-
-        break;
-      }
-      case 2:{ //CalibrationOTNPulse
-        int ret;
-        stringstream cmd;
-
-        cmd <<  "CalibrationOTNPulse " << m_cam.m_calibration_configuration;
-        m_cam.m_xpad->sendWait(cmd.str(), ret);
-
-        if(ret == 0)
-        DEB_TRACE() << "Calibration Over-The-Noise with PULSE finished SUCCESFULLY";
-        else if (ret == 1)
-        DEB_TRACE() << "Calibration Over-The-Noise was ABORTED";
-        else
-        throw LIMA_HW_EXC(Error, "Calibration Over The Noise with PULSE FAILED!");
-
-        break;
-
-      }
-      case 3:{ //CalibrationBEAM
-        int ret;
-        stringstream cmd;
-
-        cmd <<  "CalibrationBEAM " << m_cam.m_time << " " << m_cam.m_ITHL_max << " " << m_cam.m_calibration_configuration;
-        m_cam.m_xpad->sendWait(cmd.str(), ret);
-
-        if(ret == 0)
-        DEB_TRACE() << "Calibration BEAM finished SUCCESFULLY";
-        else if (ret == 1)
-        DEB_TRACE() << "Calibration BEAM was ABORTED";
-        else
-        throw LIMA_HW_EXC(Error, "Calibration BEAM FAILED!");
-
-        break;
-
-      }
-      case 4:{ //loadCalibrationFromFile
-        int ret1;
-
-        size_t pos = m_cam.m_file_path.find(".cf");
-
-        if (pos == string::npos){
-          m_cam.m_file_path.append(".cfg");
-          pos = m_cam.m_file_path.length() - 4;
-        }
-
-        m_cam.m_file_path.replace(pos, 4, ".cfg");
-        ret1 = m_cam.loadConfigGFromFile((char *) m_cam.m_file_path.c_str());
-
-        if (ret1 == 0){
-          m_cam.m_file_path.replace(pos, 4, ".cfl");
-          m_cam.loadConfigLFromFile((char *) m_cam.m_file_path.c_str());
-        }
-
-        break;
-      }
-      case 5:{ //saveCalibrationToFile
-        int ret1;
-
-        size_t pos = m_cam.m_file_path.find(".cf");
-
-        if (pos == string::npos){
-          m_cam.m_file_path.append(".cfg");
-          pos = m_cam.m_file_path.length() - 4;
-        }
-
-        m_cam.m_file_path.replace(pos, 4, ".cfg");
-        ret1 = m_cam.saveConfigGToFile((char *) m_cam.m_file_path.c_str());
-
-        if (ret1 == 0){
-          m_cam.m_file_path.replace(pos, 4, ".cfl");
-          m_cam.saveConfigLToFile((char *) m_cam.m_file_path.c_str());
-        }
-
-        break;
-      }
-      case 6:{ //Load Default Config G values
-        string ret;
-        stringstream cmd;
-        int value, regid;
-
-        for (int i=0; i<7; i++){
-          switch (i){
-            case 0: regid = AMPTP;value = 0;break;
-            case 1: regid = IMFP;value = 50;break;
-            case 2: regid = IOTA;value = 40;break;
-            case 3: regid = IPRE;value = 60;break;
-            case 4: regid = ITHL;value = 25;break;
-            case 5: regid = ITUNE;value = 100;break;
-            case 6: regid = IBUFF;value = 0;
-          }
-
-          string register_name;
-          switch(regid){
-            case 31: register_name = "AMPTP"; break;
-            case 59: register_name = "IMFP"; break;
-            case 60: register_name = "IOTA"; break;
-            case 61: register_name = "IPRE"; break;
-            case 62: register_name = "ITHL"; break;
-            case 63: register_name = "ITUNE"; break;
-            case 64: register_name = "IBUFF"; break;
-            default: register_name = "ITHL";
-          }
-
-          cmd.str(string());
-          cmd << "LoadConfigG "<< register_name << " " << value ;
-          m_cam.m_xpad->sendWait(cmd.str(), ret);
-        }
-
-        if(ret.length()>1)
-        DEB_TRACE() << "Loading global configuratioin with values:\nAMPTP = 0, IMFP = 50, IOTA = 40, IPRE = 60, ITHL = 25, ITUNE = 100, IBUFF = 0";
-        else
-        throw LIMA_HW_EXC(Error, "Loading default global configuration values FAILED!");
-
-        break;
-      }
-      case 7:{ //ITHL Increase
-        int ret;
-        stringstream cmd;
-
-        cmd.str(string());
-        cmd << "ITHLIncrease";
-        m_cam.m_xpad->sendWait(cmd.str(), ret);
-
-        if(!ret)
-        DEB_TRACE() << "ITHL was increased SUCCESFULLY";
-        else
-        throw LIMA_HW_EXC(Error, "ITHL increase FAILED!");
-
-        break;
-      }
-      case 8:{  //ITHL Decrease
-        int ret;
-        stringstream cmd;
-
-        cmd.str(string());
-        cmd << "ITHLDecrease";
-        m_cam.m_xpad->sendWait(cmd.str(), ret);
-
-        if(!ret)
-        DEB_TRACE() << "ITHL was decreased SUCCESFULLY";
-        else
-        throw LIMA_HW_EXC(Error, "ITHL decrease FAILED!");
-
-        break;
-      }
-      case 9:{  //LoadFloatConfigL
-        int ret;
-        stringstream cmd;
-
-        cmd.str(string());
-        cmd <<  "LoadFlatConfigL " << " " << m_cam.m_flat_value;
-        m_cam.m_xpad->sendWait(cmd.str(), ret);
-
-        if(!ret)
-        DEB_TRACE() << "Loading local configurations values, with flat value: " <<  m_cam.m_flat_value << " -> OK" ;
-        else
-        throw LIMA_HW_EXC(Error, "Loading local configuratin with FLAT value FAILED!");
-
-        break;
-      }
-    }
-    aLock.lock();
-    m_cam.m_quit = false;
-    m_cam.m_wait_flag = true;
-    m_cam.m_cond.broadcast();
-  }
-
-  DEB_TRACE() << "Acquisition thread finished";
-  //cout << "--- End of " << __func__ << endl;
-}
-*/
-
 
 
 void Camera::AcqThread::threadFunction()
@@ -715,7 +363,7 @@ void Camera::AcqThread::threadFunction()
 
 				if (m_cam.m_quit == false)
 				{
-					m_cam.sendExposeCommand();
+				       m_cam.sendExposeCommand();
 
 					bool continueFlag = true;
 					int ret;
@@ -772,7 +420,7 @@ void Camera::AcqThread::threadFunction()
 
 							stringstream fileName;
 
-							//fileName << "/opt/cegitek/tmp_corrected/burst_" << m_cam.m_burst_number << "_image_" << m_cam.m_acq_frame_nb  << ".bin";
+
 							fileName << "/opt/cegitek/tmp_corrected/burst_" << m_cam.m_burstNumber << "_image_" << m_cam.m_acq_frame_nb  << ".bin";
 							while (access( fileName.str().c_str(), F_OK ) == -1)
 							{
@@ -1044,7 +692,6 @@ void Camera::AcqThread::threadFunction()
 	}
 
 	DEB_TRACE() << "Acquisition thread finished";
-	//cout << "--- End of " << __func__ << endl;
 }
 
 
@@ -1087,8 +734,7 @@ void Camera::getImageSize(Size& size) {
 
 void Camera::getPixelSize(double& size_x, double& size_y) {
   DEB_MEMBER_FUNCT();
-  //sizex = xPixelSize;
-  //sizey = yPixelSize;
+
   size_x = 130; // pixel size is 130 micron
   size_y = 130;
 }
@@ -1111,7 +757,7 @@ void Camera::getImageType(ImageType& pixel_depth) {
 void Camera::setImageType(ImageType pixel_depth) {
   //this is what xpad generates but may need Bpp32 for accummulate
   DEB_MEMBER_FUNCT();
-  //m_image_type = type;
+
   switch( pixel_depth )
   {
     case Bpp16S:
@@ -1154,23 +800,6 @@ void Camera::getDetectorModel(std::string& model) {
   m_xpad->sendWait(cmd.str(), model);
 
   m_xpad_model = model;
-
-  /*if (m_xpad_type == PCI){
-  if(m_xpad_model == 101) model = "XPAD_S70";
-  else if(m_xpad_model == 102) model = "XPAD_S140";
-  else if(m_xpad_model == 103) model = "XPAD_S540";
-  else if(m_xpad_model == 104) model = "XPAD_S700";
-  else if(m_xpad_model == 105) model = "XPAD_S1400";
-  else throw LIMA_HW_EXC(Error, "Xpad Type not supported");
-}
-else{
-if(m_xpad_model == 1) model = "XPAD_S10";
-else if(m_xpad_model == 2) model = "XPAD_C10";
-else if(m_xpad_model == 3) model = "XPAD_A10";
-else if(m_xpad_model == 4) model = "XPAD_S70";
-else if(m_xpad_model == 5) model = "XPAD_C70";
-else throw LIMA_HW_EXC(Error, "Xpad Type not supported");
-}*/
 }
 
 HwBufferCtrlObj* Camera::getBufferCtrlObj() {
@@ -1284,7 +913,6 @@ bool Camera::isAcqRunning() const {
 
 string Camera::getUSBDeviceList(void){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::getUSBDeviceList ***********";
 
   string message;
   stringstream cmd;
@@ -1295,15 +923,12 @@ string Camera::getUSBDeviceList(void){
 
   DEB_TRACE() << "List of USB devices connected: " << message;
 
-  DEB_TRACE() << "********** Outside of Camera::getUSBDeviceList ***********";
-
   return message;
 
 }
 
 int Camera::setUSBDevice(unsigned short device){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::setUSBDevice ***********";
 
   int ret;
   stringstream cmd;
@@ -1317,38 +942,13 @@ int Camera::setUSBDevice(unsigned short device){
   else
   throw LIMA_HW_EXC(Error, "Setting USB device FAILED!");
 
-  DEB_TRACE() << "********** Outside of Camera::setUSBDevice ***********";
-
   return ret;
 
 }
 
-/*int Camera::defineDetectorModel(unsigned short model){
-DEB_MEMBER_FUNCT();
-DEB_TRACE() << "********** Inside of Camera::DefineDetectorModel ***********";
-
-int ret;
-stringstream cmd;
-
-cmd.str(string());
-cmd << "DefineDetectorModel " << model;
-m_xpad->sendWait(cmd.str(), ret);
-
-if(!ret)
-DEB_TRACE() << "Defining detector model to " << model;
-else
-throw LIMA_HW_EXC(Error, "Defining detector model FAILED");
-
-
-DEB_TRACE() << "********** Outside of Camera::DefineDetectorModel ***********";
-
-return ret;
-
-}*/
 
 int Camera::setModuleMask(unsigned int moduleMask){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::setModuleMask ***********";
 
   int ret;
   stringstream cmd;
@@ -1364,15 +964,12 @@ int Camera::setModuleMask(unsigned int moduleMask){
   else
   throw LIMA_HW_EXC(Error, "Setting module mask FAILED!");
 
-  DEB_TRACE() << "********** Outside of Camera::setModuleMask ***********";
-
   return ret;
 
 }
 
 void Camera::getModuleMask(){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::getModuleMask ***********";
 
   int ret;
   stringstream cmd;
@@ -1383,12 +980,10 @@ void Camera::getModuleMask(){
 
   m_module_mask = ret;
 
-  DEB_TRACE() << "********** Outside of Camera::getModuleMask ***********";
 }
 
 void Camera::getModuleNumber(){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::getModuleNumber ***********";
 
   int ret;
   stringstream cmd;
@@ -1399,12 +994,10 @@ void Camera::getModuleNumber(){
 
   m_module_number = ret;
 
-  DEB_TRACE() << "********** Outside of Camera::getModuleNumber ***********";
 }
 
 void Camera::getChipMask(){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::getModuleMask ***********";
 
   int ret;
   stringstream cmd;
@@ -1415,12 +1008,10 @@ void Camera::getChipMask(){
 
   m_chip_mask = ret;
 
-  DEB_TRACE() << "********** Outside of Camera::getModuleMask ***********";
 }
 
 void Camera::getChipNumber(){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::getModuleMask ***********";
 
   int ret;
   stringstream cmd;
@@ -1431,12 +1022,10 @@ void Camera::getChipNumber(){
 
   m_chip_number = ret;
 
-  DEB_TRACE() << "********** Outside of Camera::getModuleMask ***********";
 }
 
 int Camera::askReady(){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::askReady ***********";
 
   int ret;
   stringstream cmd;
@@ -1451,14 +1040,11 @@ int Camera::askReady(){
   else
   throw LIMA_HW_EXC(Error, "AskReady FAILED!");
 
-  DEB_TRACE() << "********** Outside of Camera::askRead ***********";
-
   return ret;
 }
 
 int Camera::digitalTest(unsigned short mode){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::digitalTest ***********";
 
   int ret;
   stringstream cmd;
@@ -1507,14 +1093,11 @@ int Camera::digitalTest(unsigned short mode){
   else
   throw LIMA_HW_EXC(Error, "Digital Test FAILED!");
 
-  DEB_TRACE() << "********** Outside of Camera::digitalTest ***********";
-
   return ret;
 }
 
 int Camera::loadConfigGFromFile(std::string fpath){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::loadConfigGFromFile ***********";
 
   int ret;
   stringstream cmd;
@@ -1533,14 +1116,11 @@ int Camera::loadConfigGFromFile(std::string fpath){
   else
   throw LIMA_HW_EXC(Error, "Loading global configuration from file FAILED!");
 
-  DEB_TRACE() << "********** Outside of Camera::loadConfigGFromFile ***********";
-
   return ret;
 }
 
 int Camera::saveConfigGToFile(std::string fpath){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::saveConfigGToFile ***********";
 
   int ret;
   unsigned short  regid;
@@ -1617,51 +1197,34 @@ int Camera::saveConfigGToFile(std::string fpath){
   else
   throw LIMA_HW_EXC(Error, "Saving global configuration to file FAILED!");
 
-
-  DEB_TRACE() << "********** Outside of Camera::saveConfigGToFile ***********";
-
   return ret;
 }
 
 int Camera::loadConfigG(std::string regID, unsigned short value){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::loadConfigG ***********";
 
   string ret;
   stringstream cmd;
 
   string register_name;
   register_name.append(regID);
-  /*switch(reg){
-  case 31: register_name = "AMPTP"; break;
-  case 59: register_name = "IMFP"; break;
-  case 60: register_name = "IOTA"; break;
-  case 61: register_name = "IPRE"; break;
-  case 62: register_name = "ITHL"; break;
-  case 63: register_name = "ITUNE"; break;
-  case 64: register_name = "IBUFF"; break;
-  default: register_name = "ITHL";
-}*/
 
-cmd.str(string());
-cmd << "LoadConfigG "<< register_name.c_str() << " " << value ;
-m_xpad->sendWait(cmd.str(), ret);
+  cmd.str(string());
+  cmd << "LoadConfigG "<< register_name.c_str() << " " << value ;
+  m_xpad->sendWait(cmd.str(), ret);
 
-DEB_TRACE() << "********** Outside of Camera::loadConfigG ***********";
-
-if(ret.length()>1){
-  DEB_TRACE() << "Loading global register: " << register_name << " with value= " << value;
-  return 0;
-}
-else{
-  throw LIMA_HW_EXC(Error, "Loading global configuration FAILED!");
-  return -1;
-}
+  if(ret.length()>1){
+    DEB_TRACE() << "Loading global register: " << register_name << " with value= " << value;
+    return 0;
+  }
+  else{
+    throw LIMA_HW_EXC(Error, "Loading global configuration FAILED!");
+    return -1;
+  }
 }
 
 int Camera::readConfigG(std::string regID){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::readConfigG ***********";
 
   string message;
   stringstream cmd;
@@ -1671,70 +1234,56 @@ int Camera::readConfigG(std::string regID){
 
   string register_name;
   register_name.append(regID);
-  /*switch(reg){
-  case 31: register_name = "AMPTP"; break;
-  case 59: register_name = "IMFP"; break;
-  case 60: register_name = "IOTA"; break;
-  case 61: register_name = "IPRE"; break;
-  case 62: register_name = "ITHL"; break;
-  case 63: register_name = "ITUNE"; break;
-  case 64: register_name = "IBUFF"; break;
-  default: register_name = "ITHL";
-}*/
-if (register_name.compare("AMPTP"))
-reg = 31;
-else if (register_name.compare("IMFP"))
-reg = 59;
-else if (register_name.compare("IOTA"))
-reg = 60;
-else if (register_name.compare("IPRE"))
-reg = 61;
-else if (register_name.compare("ITHL"))
-reg = 62;
-else if (register_name.compare("ITUNE"))
-reg = 63;
-else if (register_name.compare("IBUFF"))
-reg = 64;
-else
-reg = 62;
 
-cmd.str(string());
-cmd << "ReadConfigG " << register_name;
-m_xpad->sendWait(cmd.str(), message);
+  if (register_name.compare("AMPTP"))
+    reg = 31;
+  else if (register_name.compare("IMFP"))
+    reg = 59;
+  else if (register_name.compare("IOTA"))
+    reg = 60;
+  else if (register_name.compare("IPRE"))
+    reg = 61;
+  else if (register_name.compare("ITHL"))
+    reg = 62;
+  else if (register_name.compare("ITUNE"))
+    reg = 63;
+  else if (register_name.compare("IBUFF"))
+    reg = 64;
+  else
+    reg = 62;
 
-if(message.length()>1){
-  char *value = new char[message.length()+1];
-  strcpy(value,message.c_str());
-
-  char *p = strtok(value," ,.");
-  ret[0] = reg;
-  for (int i=1; i<8 ; i++){
-    p = strtok(NULL, " ,.");
-    ret[i] = (unsigned short)atoi(p);
+  cmd.str(string());
+  cmd << "ReadConfigG " << register_name;
+  m_xpad->sendWait(cmd.str(), message);
+  
+  if(message.length()>1){
+    char *value = new char[message.length()+1];
+    strcpy(value,message.c_str());
+  
+    char *p = strtok(value," ,.");
+    ret[0] = reg;
+    for (int i=1; i<8 ; i++){
+      p = strtok(NULL, " ,.");
+      ret[i] = (unsigned short)atoi(p);
+    }
   }
-}
-else
-ret = NULL;
+  else
+    ret = NULL;
 
-delete[] ret;
+  delete[] ret;
 
-DEB_TRACE() << "********** Outside of Camera::readConfigG ***********";
-
-if(ret!=NULL){
-  DEB_TRACE() << "Reading global configuration performed SUCCESFULLY";
-  return 0;
-}
-else{
-  throw LIMA_HW_EXC(Error, "Reading global configuration FAILED!");
-  return -1;
-}
-
-
+  if(ret!=NULL){
+    DEB_TRACE() << "Reading global configuration performed SUCCESFULLY";
+    return 0;
+  }
+  else{
+    throw LIMA_HW_EXC(Error, "Reading global configuration FAILED!");
+    return -1;
+  }
 }
 
 int Camera::loadDefaultConfigGValues(){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::LoadDefaultConfigGValues ***********";
 
   this->waitAcqEnd();
 
@@ -1751,7 +1300,6 @@ int Camera::loadDefaultConfigGValues(){
 
 int Camera::ITHLIncrease(){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::ITHLIncrease ***********";
 
   this->waitAcqEnd();
 
@@ -1763,14 +1311,11 @@ int Camera::ITHLIncrease(){
   while (!m_thread_running)
   m_cond.wait();
 
-  DEB_TRACE() << "********** Outside of Camera::ITHLIncrease ***********";
-
   return 0; //ret;
 }
 
 int Camera::ITHLDecrease(){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::ITHLDecrease ***********";
 
   this->waitAcqEnd();
 
@@ -1782,16 +1327,12 @@ int Camera::ITHLDecrease(){
   while (!m_thread_running)
   m_cond.wait();
 
-  DEB_TRACE() << "********** Outside of Camera::ITHLDecrease ***********";
-
   return 0; //ret;
 }
 
 int Camera::loadFlatConfigL(unsigned short flat_value)
 {
   DEB_MEMBER_FUNCT();
-
-  DEB_TRACE() << "********** Inside of Camera::loadFlatConfig ***********";
 
   this->waitAcqEnd();
 
@@ -1804,14 +1345,11 @@ int Camera::loadFlatConfigL(unsigned short flat_value)
   while (!m_thread_running)
   m_cond.wait();
 
-  DEB_TRACE() << "********** Outside of Camera::loadFlatConfig ***********";
-
   return 0; //ret;
 }
 
 int Camera::loadConfigLFromFile(std::string fpath){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::loadConfigLFromFile ***********";
 
   int ret;
   stringstream cmd;
@@ -1830,16 +1368,11 @@ int Camera::loadConfigLFromFile(std::string fpath){
   else
   throw LIMA_HW_EXC(Error, "Loading local configuration from file FAILED!");
 
-  DEB_TRACE() << "********** Outside of Camera::loadConfigLFromFile ***********";
-
   return ret;
-
-
 }
 
 int Camera::saveConfigLToFile(std::string fpath){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::saveConfigLToFile ***********";
 
   stringstream cmd;
   //string str;
@@ -1857,8 +1390,6 @@ int Camera::saveConfigLToFile(std::string fpath){
   DEB_TRACE() << "Local configuration was saved to file SUCCESFULLY";
   else
   throw LIMA_HW_EXC(Error, "Saving local configuration to file FAILED!");
-
-  DEB_TRACE() << "********** Outside of Camera::saveConfigLToFile ***********";
 
   return ret;
 }
@@ -2105,9 +1636,7 @@ unsigned int Camera::getStackImages(){
 }
 
 int Camera::calibrationOTN(unsigned short calibrationConfiguration){
-
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::calibrationOTN ***********";
 
   this->waitAcqEnd();
 
@@ -2121,15 +1650,11 @@ int Camera::calibrationOTN(unsigned short calibrationConfiguration){
   while (!m_thread_running)
   m_cond.wait();
 
-  DEB_TRACE() << "********** Outside of Camera::calibrationOTN ***********";
-
   return 0;
 }
 
 int Camera::calibrationOTNPulse(unsigned short calibrationConfiguration){
-
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::calibrationOTNPulse ***********";
 
   this->waitAcqEnd();
 
@@ -2143,16 +1668,12 @@ int Camera::calibrationOTNPulse(unsigned short calibrationConfiguration){
   while (!m_thread_running)
   m_cond.wait();
 
-  DEB_TRACE() << "********** Outside of Camera::calibrationOTNPulse ***********";
-
   return 0;
 
 }
 
 int Camera::calibrationBEAM(unsigned int time, unsigned int ITHLmax, unsigned short calibrationConfiguration){
-
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::calibrationBEAM ***********";
 
   this->waitAcqEnd();
 
@@ -2167,16 +1688,11 @@ int Camera::calibrationBEAM(unsigned int time, unsigned int ITHLmax, unsigned sh
   while (!m_thread_running)
   m_cond.wait();
 
-  DEB_TRACE() << "********** Outside of Camera::calibrationBEAM ***********";
-
   return 0;
-
 }
 
 int Camera::loadCalibrationFromFile(std::string fpath){
-
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::loadCalibrationFromFile ***********";
 
   this->waitAcqEnd();
 
@@ -2190,15 +1706,11 @@ int Camera::loadCalibrationFromFile(std::string fpath){
   while (!m_thread_running)
   m_cond.wait();
 
-  DEB_TRACE() << "********** Outside of Camera::loadCalibrationFromFile ***********";
-
   return 0; //ret1 & ret2;
 }
 
 int Camera::saveCalibrationToFile(std::string fpath){
-
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::saveCalibrationToFile ***********";
 
   this->waitAcqEnd();
 
@@ -2212,61 +1724,49 @@ int Camera::saveCalibrationToFile(std::string fpath){
   while (!m_thread_running)
   m_cond.wait();
 
-  DEB_TRACE() << "********** Outside of Camera::saveCalibrationToFile ***********";
-
   return 0; //ret1 & ret2;
 }
 
 void Camera::abortCurrentProcess(){
-
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::abortCurrentProcess ***********";
 
   stringstream cmd;
 
   m_quit = true;
   m_cond.broadcast();
-
+  DEB_TRACE() << "abortCurrentProcess() stopAcq()";
   cmd <<  "AbortCurrentProcess";
   m_xpad_alt->sendNoWait(cmd.str());
 
-  DEB_TRACE() << "********** Outside of Camera::abortCurrentProcess ***********";
 }
 
 int Camera::increaseBurstNumber(){
-
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::decreaseBurstNumber ***********";
+
   stringstream cmd;
   int ret;
 
   cmd << "IncreaseBurstNumber";
   m_xpad->sendWait(cmd.str(), ret);
 
-  DEB_TRACE() << "********** Outside of Camera::decreaseBurstNumber ***********";
-
   return ret;
 }
 
 int Camera::decreaseBurstNumber(){
-
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::decreaseBurstNumber ***********";
+
   stringstream cmd;
   int ret;
 
   cmd << "DecreaseBurstNumber";
   m_xpad->sendWait(cmd.str(), ret);
 
-  DEB_TRACE() << "********** Outside of Camera::decreaseBurstNumber ***********";
-
   return ret;
 }
 
 int Camera::getBurstNumber(){
-
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::getBurstNumber ***********";
+
   stringstream cmd;
   int ret;
 
@@ -2275,22 +1775,17 @@ int Camera::getBurstNumber(){
 
   m_burstNumber = ret;
 
-  DEB_TRACE() << "********** Outside of Camera::getBurstNumber ***********";
-
   return ret;
 }
 
 int Camera::resetBurstNumber(){
-
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::resetBurstNumber ***********";
+
   stringstream cmd;
   int ret;
 
   cmd << "ResetBurstNumber";
   m_xpad->sendWait(cmd.str(), ret);
-
-  DEB_TRACE() << "********** Outside of Camera::resetBurstNumber ***********";
 
   if (!ret){
     m_burstNumber = -1;
@@ -2301,15 +1796,12 @@ int Camera::resetBurstNumber(){
 }
 
 void Camera::exit(){
-
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::exit ***********";
+
   stringstream cmd;
 
   cmd << "Exit";
   m_xpad->sendNoWait(cmd.str());
-
-  DEB_TRACE() << "********** Outside of Camera::exit ***********";
 }
 
 
@@ -2318,9 +1810,7 @@ int Camera::getConnectionID(){
 }
 
 int Camera::createWhiteImage(std::string fileName){
-
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::createWhiteImage ***********";
 
   int ret;
   stringstream cmd;
@@ -2329,13 +1819,10 @@ int Camera::createWhiteImage(std::string fileName){
   cmd << "CreateWhiteImage " << fileName;
   m_xpad->sendWait(cmd.str(), ret);
 
-  DEB_TRACE() << "********** Outside of Camera::createWhiteImage ***********";
-
   return ret;
 }
 int Camera::deleteWhiteImage(std::string fileName){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::deleteWhiteImage ***********";
 
   int ret;
   stringstream cmd;
@@ -2344,13 +1831,10 @@ int Camera::deleteWhiteImage(std::string fileName){
   cmd << "DeleteWhiteImage " << fileName;
   m_xpad->sendWait(cmd.str(), ret);
 
-  DEB_TRACE() << "********** Outside of Camera::deleteWhiteImage ***********";
-
   return ret;
 }
 int Camera::setWhiteImage(std::string fileName){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::setWhiteImage ***********";
 
   int ret;
   stringstream cmd;
@@ -2359,14 +1843,11 @@ int Camera::setWhiteImage(std::string fileName){
   cmd << "SetWhiteImage " << fileName;
   m_xpad->sendWait(cmd.str(), ret);
 
-  DEB_TRACE() << "********** Outside of Camera::setWhiteImage ***********";
-
   return ret;
 }
 
 void Camera::getWhiteImagesInDir(){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::getWhiteImagesInDir ***********";
 
   string message;
   stringstream cmd;
@@ -2376,15 +1857,13 @@ void Camera::getWhiteImagesInDir(){
   m_xpad->sendWait(cmd.str(), message);
 
   DEB_TRACE() << "List of USB devices connected: " << message;
-
-  DEB_TRACE() << "********** Outside of Camera::getWhiteImagesInDir ***********";
 }
+
 void Camera::readDetectorTemperature(){
 }
 
 int Camera::setDebugMode(unsigned short flag){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::setDebugMode ***********";
 
   int ret;
   string flag_state;
@@ -2399,13 +1878,10 @@ int Camera::setDebugMode(unsigned short flag){
   cmd << "SetDebugMode " << flag_state.c_str();
   m_xpad->sendWait(cmd.str(), ret);
 
-  DEB_TRACE() << "********** Outside of Camera::setDebugMode ***********";
-
   return ret;
 }
 int Camera::showTimers(unsigned short flag){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::showTimers ***********";
 
   int ret;
   string flag_state;
@@ -2420,14 +1896,11 @@ int Camera::showTimers(unsigned short flag){
   cmd << "ShowTimers " << flag_state.c_str();
   m_xpad->sendWait(cmd.str(), ret);
 
-  DEB_TRACE() << "********** Outside of Camera::showTimers ***********";
-
   return ret;
 }
 
 int Camera::createDeadNoisyMask(){
   DEB_MEMBER_FUNCT();
-  DEB_TRACE() << "********** Inside of Camera::showTimers ***********";
 
   int ret;
   stringstream cmd;
@@ -2435,8 +1908,6 @@ int Camera::createDeadNoisyMask(){
   cmd.str(string());
   cmd << "CreateDeadNoisyMask ";
   m_xpad->sendWait(cmd.str(), ret);
-
-  DEB_TRACE() << "********** Outside of Camera::showTimers ***********";
 
   return ret;
 }
