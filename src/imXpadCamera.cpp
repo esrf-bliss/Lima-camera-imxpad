@@ -67,7 +67,11 @@ private:
 // @brief  Ctor
 //---------------------------m_npixels
 
-Camera::Camera(string hostname, int port) : m_hostname(hostname), m_port(port){
+Camera::Camera(string hostname, int port) :
+  m_hostname(hostname),
+  m_port(port),
+  m_state(XpadStatus::Idle)
+{
   DEB_CONSTRUCTOR();
 
   /*
@@ -248,6 +252,7 @@ void Camera::startAcq() {
     else
       usleep(17000);
   }
+  m_state = XpadStatus::Acquiring;
 }
 
 void Camera::waitAcqEnd(){
@@ -257,6 +262,7 @@ void Camera::waitAcqEnd(){
     m_cond.wait();
 
   usleep(m_dead_time);
+  m_state = XpadStatus::Idle;
 }
 
 void Camera::setWaitAcqEndTime(unsigned int time){
@@ -323,11 +329,11 @@ void Camera::getStatus(XpadStatus& status) {
     } else if (state.compare("Resetting") == 0) {
       status.state = XpadStatus::Resetting;
     }
-    //DEB_TRACE() << "State str is [" << state << "]";
+    m_state = status.state;
+  } else{
+    status.state = m_state;
   }
-  else {
-    status.state =  XpadStatus::Acquiring;
-  }
+  DEB_TRACE() << "state = " << m_state;
 }
 
 int Camera::getNbHwAcquiredFrames() {
@@ -389,6 +395,7 @@ void Camera::AcqThread::threadFunction()
 
 							if ( ret == 0 )
 							{
+							  if (!m_cam.m_quit) {
 								HwFrameInfoType frame_info;
 								frame_info.acq_frame_nb = m_cam.m_acq_frame_nb;
 								continueFlag = buffer_mgr.newFrameReady(frame_info);
@@ -397,6 +404,7 @@ void Camera::AcqThread::threadFunction()
 								++m_cam.m_acq_frame_nb;
 
 								DEB_TRACE() << "acquired " << m_cam.m_acq_frame_nb << " frames, required " << m_cam.m_nb_frames << " frames";
+							  }
 							}
 							else
 							{
@@ -404,7 +412,7 @@ void Camera::AcqThread::threadFunction()
 								DEB_TRACE() << "ABORT detected";
 							}
 						}
-						m_cam.getDataExposeReturn();
+						//m_cam.getDataExposeReturn();
 					}
 					else
 					{
