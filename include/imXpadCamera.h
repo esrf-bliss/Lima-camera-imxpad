@@ -379,6 +379,7 @@ namespace lima {
 
       class                   AcqThread;
       AcqThread               *m_acq_thread;
+      XpadStatus::XpadState   m_state;
 
       //---------------------------------
       //- XPAD stuff
@@ -407,7 +408,6 @@ namespace lima {
       int                     m_chip_number;
       int                     m_burstNumber;
       unsigned int			m_stack_images;
-
 
       // Buffer control object
       SoftBufferCtrlObj m_bufferCtrlObj;
