@@ -19,7 +19,7 @@ requirements:
   host:
     - python {{ python }}
     - sip 4.19.8              # For compatibility with pyqt 5.9.2
-    - lima-core
+    - lima-core >=1.9.12
   build:
     - git
     - cmake
