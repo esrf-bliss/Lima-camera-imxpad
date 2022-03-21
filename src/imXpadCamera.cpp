@@ -273,6 +273,21 @@ void Camera::setWaitAcqEndTime(unsigned int time){
 
 void Camera::stopAcq() {
   DEB_MEMBER_FUNCT();
+  Camera::XpadStatus xpadStatus;
+  bool aborted = false;
+  
+  getStatus(xpadStatus);  
+
+  if (xpadStatus.state != Camera::XpadStatus::Idle) {
+    abortCurrentProcess();
+    aborted = true;
+  }
+  waitAcqEnd();
+  
+  // flush comm. socket, after an abort of acq. (in a middle of an exposure) buffer can contain something
+  // and next command with responses expected will failed due to a bad answer
+  if (aborted)
+    m_xpad->flushComm();
 }
 
 
@@ -412,7 +427,7 @@ void Camera::AcqThread::threadFunction()
 			    DEB_TRACE() << "ABORT detected";
 			  }
 		      }
-		    //m_cam.getDataExposeReturn();
+		    m_cam.getDataExposeReturn();
 		  }
 		else
 		  {

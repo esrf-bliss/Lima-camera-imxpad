@@ -46,7 +46,8 @@ public:
     XpadClient();
     ~XpadClient();
 
-    void sendNoWait(std::string cmd);
+        void flushComm();
+        void sendNoWait(std::string cmd);
 	void sendWait(std::string cmd);
 	void sendWait(std::string cmd, int& value);
 	void sendWait(std::string cmd, double& value);
