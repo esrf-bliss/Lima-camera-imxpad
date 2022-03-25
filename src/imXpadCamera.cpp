@@ -286,8 +286,8 @@ void Camera::stopAcq() {
   
   // flush comm. socket, after an abort of acq. (in a middle of an exposure) buffer can contain something
   // and next command with responses expected will failed due to a bad answer
-  if (aborted)
-    m_xpad->flushComm();
+  //if (aborted)
+  //  m_xpad->flushComm();
 }
 
 
@@ -419,6 +419,10 @@ void Camera::AcqThread::threadFunction()
 			      ++m_cam.m_acq_frame_nb;
 
 			      DEB_TRACE() << "acquired " << m_cam.m_acq_frame_nb << " frames, required " << m_cam.m_nb_frames << " frames";
+			    }
+			    else {
+			      continueFlag = false;
+			      DEB_TRACE() << "Acq. Quit  detected";
 			    }
 			  }
 			else
