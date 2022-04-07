@@ -78,6 +78,7 @@ XpadClient::~XpadClient() {
     DEB_DESTRUCTOR();
 }
 
+
 void XpadClient::sendWait(string cmd) {
     DEB_MEMBER_FUNCT();
     int rc;
@@ -511,14 +512,14 @@ int XpadClient::waitForResponse(int& value) {
     //cout << "Inside waitForResponse" << endl;
     DEB_MEMBER_FUNCT();
     int r, code, done, outoff;
-    string errmsg;
+    string errmsg, astr;
     m_debugMessages.clear();
 
     if (!m_valid) {
         THROW_HW_ERROR(Error) << "Not connected to server ";
     }
     for (;;) {
-        r = nextLine(&errmsg, &code, 0, 0, &done, &outoff);
+        r = nextLine(&errmsg, &code, 0, &astr, &done, &outoff);
         switch (r) {
         case CLN_NEXT_PROMPT:
             error_handler("(warning) No return code from the server.");
@@ -551,7 +552,7 @@ int XpadClient::waitForResponse(int& value) {
             error_handler("Unexpected double return code.");
             return -1;
         case CLN_NEXT_STRRET:
-            error_handler("Server responded with a string.");
+            error_handler("Server responded with a string: "+astr);
             return -1;
         default:
             THROW_HW_ERROR(Error) << "Programming error. Please report";
@@ -617,7 +618,7 @@ int XpadClient::waitForResponse(double& value) {
  */
 int XpadClient::waitForResponse(string& value) {
     DEB_MEMBER_FUNCT();
-    int r, done, outoff;
+    int r, done, outoff, aint;
     string errmsg;
     m_debugMessages.clear();
 
@@ -625,7 +626,7 @@ int XpadClient::waitForResponse(string& value) {
         THROW_HW_ERROR(Error) << "Not connected to server ";
     }
     for (;;) {
-        r = nextLine(&errmsg, 0, 0, &value, &done, &outoff);
+        r = nextLine(&errmsg, &aint, 0, &value, &done, &outoff);
         switch (r) {
         case CLN_NEXT_PROMPT:
             error_handler("(warning) No return code from the server.");
@@ -646,7 +647,7 @@ int XpadClient::waitForResponse(string& value) {
             timebar_handler(done, outoff, errmsg);
             break;
         case CLN_NEXT_INTRET:
-            error_handler("Server responded with an integer");
+            error_handler("Server responded with an integer: "+aint);
             return -1;
         case CLN_NEXT_DBLRET:
             error_handler("Server responded with a double");
@@ -827,7 +828,6 @@ int XpadClient::getChar() {
 	}
     return c;
 }
-
 
 void XpadClient::errmsg_handler(const string errmsg) {
     DEB_MEMBER_FUNCT();
