@@ -317,6 +317,8 @@ public:
 
 	//!< Create the dead noisy pixel mask
 	int createDeadNoisyMask();
+ private:
+	 Camera(const imXpad::Camera&);
 };
 
 }; // namespace imXpad

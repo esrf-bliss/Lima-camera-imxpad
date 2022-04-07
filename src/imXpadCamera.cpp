@@ -273,6 +273,16 @@ void Camera::setWaitAcqEndTime(unsigned int time){
 
 void Camera::stopAcq() {
   DEB_MEMBER_FUNCT();
+  Camera::XpadStatus xpadStatus;
+  bool aborted = false;
+  
+  getStatus(xpadStatus);  
+
+  if (xpadStatus.state != Camera::XpadStatus::Idle) {
+    abortCurrentProcess();
+    aborted = true;
+  }
+  waitAcqEnd();
 }
 
 
@@ -405,6 +415,10 @@ void Camera::AcqThread::threadFunction()
 
 			      DEB_TRACE() << "acquired " << m_cam.m_acq_frame_nb << " frames, required " << m_cam.m_nb_frames << " frames";
 			    }
+			    else {
+			      continueFlag = false;
+			      DEB_TRACE() << "Acq. Quit  detected";
+			    }
 			  }
 			else
 			  {
@@ -412,7 +426,7 @@ void Camera::AcqThread::threadFunction()
 			    DEB_TRACE() << "ABORT detected";
 			  }
 		      }
-		    //m_cam.getDataExposeReturn();
+		    m_cam.getDataExposeReturn();
 		  }
 		else
 		  {
