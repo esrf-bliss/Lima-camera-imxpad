@@ -25,7 +25,7 @@ requirements:
     - cmake
     - {{ compiler('cxx') }}
   run:
-    - python {{ python }}
+    - python
     - {{ pin_compatible('sip', min_pin='x.x.x', max_pin='x') }}
     - {{ pin_compatible('lima-core', max_pin='x.x') }}
 

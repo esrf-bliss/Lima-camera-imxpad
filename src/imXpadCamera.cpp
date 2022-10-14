@@ -1210,6 +1210,10 @@ int Camera::saveConfigGToFile(std::string fpath){
           file << endl;
           mdMask = mdMask << 1;
           ret = 0;
+	  if(mdMask<=m_module_mask){
+	    stream >> retString;
+          }            
+
         }
         else{
           ret = -1;
