@@ -86,7 +86,6 @@ void Interface::prepareAcq() {
     FrameDim frame_dim(image_size, image_type);
     m_bufferCtrlObj->setFrameDim(frame_dim);
     m_bufferCtrlObj->setNbConcatFrames(1);
-    m_bufferCtrlObj->setNbBuffers(1);
 }
 
 void Interface::startAcq() {
