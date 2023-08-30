@@ -82,9 +82,9 @@ class imXPAD(PyTango.Device_4Impl):
             print (e)
             
         #Dictionaries with the Types. 
-        self.__AcquisitionMode = {'Standard':XpadAcq.Camera.XpadAcquisitionMode.Standard,
-                                  'ComputerBurst':XpadAcq.Camera.XpadAcquisitionMode.ComputerBurst,
-                                  'DetectorBurst':XpadAcq.Camera.XpadAcquisitionMode.DetectorBurst,
+        self.__AcquisitionMode = {'STANDARD':XpadAcq.Camera.XpadAcquisitionMode.Standard,
+                                  'COMPUTERBURST':XpadAcq.Camera.XpadAcquisitionMode.ComputerBurst,
+                                  'DETECTORBURST':XpadAcq.Camera.XpadAcquisitionMode.DetectorBurst,
                                  # 'SingleBunch16bits':XpadAcq.Camera.XpadAcquisitionMode.SingleBunch16bits,
                                  # 'SingleBunch32bits':XpadAcq.Camera.XpadAcquisitionMode.SingleBunch32bits,
                                  # 'Stacking16bits':XpadAcq.Camera.XpadAcquisitionMode.Stacking16bits,

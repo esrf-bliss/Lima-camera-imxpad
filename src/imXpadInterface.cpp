@@ -74,19 +74,7 @@ void Interface::reset(ResetLevel reset_level) {
 
 void Interface::prepareAcq() {
     DEB_MEMBER_FUNCT();
-    
-    Size image_size;
-    ImageType image_type;
-
     m_cam.prepareAcq();
-    
-    m_det_info.getMaxImageSize(image_size);
-    m_det_info.getDefImageType(image_type);
-    
-    FrameDim frame_dim(image_size, image_type);
-    m_bufferCtrlObj->setFrameDim(frame_dim);
-    m_bufferCtrlObj->setNbConcatFrames(1);
-    m_bufferCtrlObj->setNbBuffers(1);
 }
 
 void Interface::startAcq() {
